@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 
 /**
  * Write a description of class TCB here.
@@ -13,6 +14,8 @@ public class TCB
     private int ingresso;
     private int duracao;
     private int prioridade;
+    
+    //Vamos ter q criar uma classe eventos?
     private int eventos;
 
     /**
@@ -20,15 +23,7 @@ public class TCB
      */
     public TCB()
     {
-        // Entao, o so vai receber as configs
-        // Ele vai transformar elas em variaveis
-        // E passar pros objetos certos
-        // Tem q passar o valor do tick pro relogio
-        // O tipo de algoritimo pro escalonador
-        // As tarefas pra lista de prontas
-        // Dai a lista de prontas cria as tasks e guarda em si
-        
-        // Entao quem vai criar cada TCB eh a lista de prontas
+        //Cria tudo null pra dps o sistema operacional preencher
         
     }
 
@@ -38,6 +33,14 @@ public class TCB
      * @param  y  a sample parameter for a method
      * @return    the sum of x and y
      */
+    public void setConfigs(ArrayList<Integer> configs)
+    {
+        //Vai receber um array, nao o array inteiro q tem no SistemaOperacional
+        //Provavelmente usa um stream la pra passar pra ca s as relevantes
+        //Dai vai salvando nas variaveis certas
+        
+    }
+    
     public int getId()
     {
         // put your code here
