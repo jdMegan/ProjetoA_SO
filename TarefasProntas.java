@@ -6,18 +6,17 @@ import java.util.ArrayList;
  * @author (your name)
  * @version (a version number or a date)
  */
-public class TarefasProntas
+public class TarefasProntas extends FilaTarefas
 {
     // instance variables - replace the example below with your own
-    private ArrayList<TCB> listaProntas;
+    
 
     /**
      * Constructor for objects of class TarefasProntas
      */
     public TarefasProntas()
     {
-        // initialise instance variables
-        listaProntas = new ArrayList<>();
+        
     }
 
     /**
@@ -26,14 +25,16 @@ public class TarefasProntas
      * @param  y  a sample parameter for a method
      * @return    the sum of x and y
      */
-    public int sampleMethod(int y)
+    public void setAlgoritimo(String alg)
     {
-        // put your code here
-        return 0;
+        ;
+    }
+    public String getAlgoritimo( )
+    {
+        return null;
     }
     public boolean isEmpty()
     {
-        // put your code here
-        return listaProntas.isEmpty();
+        return false;
     }
 }
