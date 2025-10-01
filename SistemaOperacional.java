@@ -1,10 +1,13 @@
 import java.util.ArrayList;
 
 /**
- * Write a description of class SistemaOperacional here.
+ * A classe Sistema Operacional simulara . . . o sistema operacional. Logo ela que coordenara as outras classes.
+ * Cabe ao sistema operacional receber a requisiçao de tarefa, que sera feita via um documento .txt com as informaçoes da tarefa, e entao chamar o Parser para extrair os dados.
+ * O sistema operacional entao ira, com esses dados, criar os TCB colocalos na Fila e chamar o Escalonador.
+ * Alm disso o sistema operacional tambem tera um Clock para a passagem de tick, seja em loop ou em modo debbuger, e tera um Historico para salvar o estado das tarefaz em cada momento.
  *
- * @author (your name)
- * @version (a version number or a date)
+ * @Jade M
+ * @0.2
  */
 public class SistemaOperacional
 {
@@ -17,10 +20,11 @@ public class SistemaOperacional
     private Parser parser;
     private ArrayList<Integer> configuracoes;
     
-    //private Historico historico; Criar uma classe Historico, dai o SO tem um historico e a cada tick ele manda oq tem em cada FilaTarefas pro historico pra dps o Historico poder criar o grafico 
+    //Criar uma classe Historico, dai o SO tem um historico e a cada tick ele manda oq tem em cada FilaTarefas pro historico pra dps o Historico poder criar o grafico
+    //private Historico historico; 
 
     /**
-     * Constructor for objects of class SistemaOperacional
+     * Construtora, bem generica
      */
     public SistemaOperacional()
     {
@@ -36,12 +40,11 @@ public class SistemaOperacional
     }
 
     /**
-     * An example of a method - replace this comment with your own
-     *
-     * @param  y  a sample parameter for a method
-     * @return    the sum of x and y
+     * Metodo que simula a passagem de tick's
+     * Presume-se que sempre tera uma tarefa sendo executada at todas serem executadas. Entao esse sera o parametro para o loop
+     * 
      */
-    public void loopSimulacao(int y)
+    public void loopConstante()
     {
         while(!tarefaExecutando.isEmpty())
         {
@@ -49,18 +52,57 @@ public class SistemaOperacional
         }
     }
     
+    /**
+     * Metodo que simula a passagem de tick's no modo debugger
+     * Provavelmente o ideal seria de algum modo que ele le entrada do teclado para ir pro proximo tick
+     * Mas so ir chamando ela no terminal n tem problema por hora
+     * 
+     */
+    public void loopDebbuger()
+    {
+        relogio.nextTick();
+    }
+    
+    
+    /**
+     * Metodo que comeca tudo
+     * Começa o relogio e o loop. //O loop acaba se no tiver tarefa executando, ento ele tem q ser a ultima coisa a ser chamada
+     * Chama o parseConfigs para ler as configuraçes
+     * !!!!Criar alguma funçao q le as configuraçoes e separa elas em arrays pra cada uma das coisas sabe, uma por objeto uma pro escalonado
+     * !!!!Ou a gente pode so usar stream sla
+     * !!!!Tem que ver isso
+     * Passa as configuraçes para o escalonador
+     * Cria as tasks
+     * Poe as tasks na fila
+     * 
+     */
     public void comecar()
     {
-        // chama a parseConfigs
-        // chama cinfigsEscalonador
-        // chama criarTasks
+        parseConfigs("caminho_da_config");
+        ArrayList<Integer> PLACEHOLDER = null;
         
+        
+        configsEscalonador(PLACEHOLDER);
+        // chama criarTasks
+        loopConstante();       
         
     }
     
-    public void parseConfigs()
+    /**
+     * Metodo que comeca tudo
+     * Começa o relogio e o loop. //O loop acaba se no tiver tarefa executando, ento ele tem q ser a ultima coisa a ser chamada
+     * Chama o parseConfigs para ler as configuraçes
+     * !!!!Criar alguma funçao q le as configuraçoes e separa elas em arrays pra cada uma das coisas sabe, uma por objeto uma pro escalonado
+     * !!!!Ou a gente pode so usar stream sla
+     * !!!!Tem que ver isso
+     * Passa as configuraçes para o escalonador
+     * Cria as tasks
+     * Poe as tasks na fila
+     * 
+     */
+    public void parseConfigs(String caminho_da_config)
     {
-        configuracoes = parser.lerConfigs();
+        configuracoes = parser.lerConfigs(caminho_da_config);
         // as configuraçoes serao na ordem algoritmo_escalonamento;quantum id;cor;ingresso;duracao;prioridade;lista_eventos
         // algoritmo_escalonamento e quantum vai pro escalonador
         // sao criadas TCB's com  id;cor;ingresso;duracao;prioridade;lista_eventos e cada TCB criada vai pra lista de prontas
@@ -68,13 +110,14 @@ public class SistemaOperacional
         
     }
     
-    public void criarTasks()
+    public void criarTasks(ArrayList<Integer> configs)
     {
         // vai criando TCB's e mandando pro listaProntas
+        //Talvez fazer uma funçao so pra mandar pro lista prontas
     }
     
     
-    public void configsEscalonador()
+    public void configsEscalonador(ArrayList<Integer> configs)
     {
         // Manda pro escalonador o quantum e o tipo de algoritimo
         
