@@ -6,7 +6,6 @@ import java.util.ArrayList;
  * O sistema operacional entao ira, com esses dados, criar os TCB colocalos na Fila e chamar o Escalonador.
  * Alm disso o sistema operacional tambem tera um Clock para a passagem de tick, seja em loop ou em modo debbuger, e tera um Historico para salvar o estado das tarefaz em cada momento.
  *
- * @Jade M
  * @0.2
  */
 public class SistemaOperacional
