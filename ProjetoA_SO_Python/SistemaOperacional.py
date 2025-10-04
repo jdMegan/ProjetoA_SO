@@ -10,74 +10,73 @@ import Parser
 import Escalonador
 import TCB
 class SistemaOperacional():
-    def __init__(self):
+    def __init__(self,nome_config):
 
         self._relogio = Clock.Clock()
+        self._tarefasCarregadas = FilaTarefas.FilaTarefas()
         self._tarefasProntas = FilaTarefas.FilaTarefas()
         self._tarefasSuspensas = FilaTarefas.FilaTarefas()
         self._tarefaExecutando = FilaTarefas.FilaTarefas()
         self._escalonador = Escalonador.Escalonador()
         self._parser = Parser.Parser()
-        self._configuracoes = None # Referente as configs de algoritmo e quantum
-        #Ao inves de 1 variavel _configuracoes achei melhor uma variavel para as configs e outra p as tarfeas
-        self._tarefas = [] # Lista que armazena as tarefas do arquivo txt
+        self._configuracoes = None
+        self._tarefas = []
 
-        # Criar uma classe Historico, dai o SO tem um historico e a cada tick ele manda oq tem em cada FilaTarefas pro historico pra dps o Historico poder criar o grafico  
-        #self._Historico = Historico()
+        self.comecar(nome_config)
 
-    # Metodo que simula a passagem de tick's
-    # Presume-se que sempre tera uma tarefa sendo executada ate todas serem executadas. Entao esse sera o parametro para o loop
-    # def loopConstante(self):
-    #     while not self._tarefaExecutando.isEmpty():
-    #         self._relogio.nextTick()
-    
-    # Metodo que simula a passagem de tick's no modo debugger
-    # Provavelmente o ideal seria de algum modo que ele ler a entrada do teclado para ir pro proximo tick
-    # Mas so ir chamando ela no terminal n tem problema por hora
-    # def loopDebbuger(self):
-    #     self._relogio.nextTick();    
-        
-    # Metodo que comeca tudo
-    # Começa o relogio e o loop. 
-    # O loop acaba se no tiver tarefa executando, entao ele tem q ser a ultima coisa a ser chamada
-    # Chama o parseConfigs para ler as configuraçes
-    # !!!!Criar alguma funçao q le as configuraçoes e separa elas em arrays pra cada uma das coisas sabe, uma por objeto uma pro escalonado
-    # !!!!Ou a gente pode so usar stream sla
-    # !!!!Tem que ver isso
-    # Passa as configuraçes para o escalonador
-    # Cria as tasks
-    # Poe as tasks na fila
+    def comecar(self,nome_config):
+        print("Iniciando Sistema Operacional...")
 
-    def comecar(self, nome_config):
         self.parseConfigs(nome_config)
         self.configsEscalonador()
         self.criarTasks()
-#         loopConstante();  
+        self.proximoTick()
+
+        #loopConstante();  
 
     def parseConfigs(self, nome_config):
-        # as configuraçoes serao na ordem algoritmo_escalonamento;quantum 
-        # enquanto as tarefas serão uma lista com id;cor;ingresso;duracao;prioridade;lista_eventos de cada uma
+        print("Lendo configurações...")
+        # configuraçoes: algoritmo_escalonamento; quantum. Pro escalonador
+        # tarefas: id; cor; ingresso; duracao; prioridade; lista_eventos. Pras TCB
         self._configuracoes, self._tarefas = self._parser.lerConfigs(nome_config)
-        # algoritmo_escalonamento e quantum vai pro escalonador
-        # sao criadas TCB's com  id;cor;ingresso;duracao;prioridade;lista_eventos e cada TCB criada vai pra lista de prontas
+    
 
     def criarTasks(self):
-        # vai criando TCB's e mandando pro listaProntas
-        # Para cada tarefa da lista de tarefas
+        print("Criando tasks...")
         for tarefa in self._tarefas:
-            print(tarefa.split(';'))
-            print('foi')
-            # novoTCB = TCB.TCB(tarefa.split(';'))
-        # Talvez fazer uma funçao so pra mandar pro lista prontas
-        # nem precisa achoo
-            # self.__tarefasProntas.append(novoTCB) #joga pro final da fila
+            dados = tarefa.split(';')
+            print(dados)
+            novoTCB = TCB.TCB(
+                id=dados[0],
+                cor=dados[1],
+                ingresso=int(dados[2]),
+                duracao=int(dados[3]),
+                eventos=dados[4:]
+            )
+            print(novoTCB)
+            self._tarefasCarregadas.addTask(novoTCB)
+        
 
     def configsEscalonador(self):
-        pass
-        # Manda pro escalonador o quantum e o tipo de algoritimo
+        print("Configurando escalonador...")
+        self._escalonador.alg  = self._configuracoes[0]
+        self._escalonador.quantum  = int(self._configuracoes[1])
+
 
     def atualizaHistorico():
-        pass
         # atualiza o historico a cada tick
+        pass
 
-
+    def proximoTick(self):
+        """Avança o tempo no sistema"""
+        novo_tick = self._relogio.proximoTick()
+        print(f"=== Tick {novo_tick} ===")
+        
+        # Aqui você vai chamar:
+        #self._atualizarEstadoTarefas()  # Tarefas que chegam neste tick
+        #self._escalonador.Escalonar()   # Escalonador decide próxima tarefa
+        #self._executar_tarefa()         # Executa a tarefa atual
+        #self._historico.atualizarHistorico()       # Registra estado atual
+        
+        #return novo_tick
+        
