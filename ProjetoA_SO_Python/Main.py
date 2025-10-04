@@ -1,4 +1,3 @@
 import SistemaOperacional
 
-so = SistemaOperacional.SistemaOperacional()
-so.comecar("arquivo-configuracao.txt")
+so = SistemaOperacional.SistemaOperacional("arquivo-configuracao.txt")
