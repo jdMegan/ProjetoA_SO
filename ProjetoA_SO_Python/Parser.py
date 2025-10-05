@@ -1,7 +1,7 @@
 import os
-"""Levando em conta que o Parser é apenas um unico metodo
-talvez valesse a pena mover isso para o SistemaOperacional e desfazer essa classe"""
-class Parser():
+from Enums import AlgoritmoEscalonamento, CorTarefa
+
+class Parser:
     def __init__(self):
         pass
     
@@ -11,15 +11,18 @@ class Parser():
 
         try:
             with open(nome_arquivo, 'r') as arq:
-                alg_qtm = arq.readline().strip().split(';')
+                # Lê algoritmo e quantum
+                alg_str, quantum_str = arq.readline().strip().split(';')
+                # Converte para Enum e int
+                algoritmo = AlgoritmoEscalonamento(alg_str)
+                quantum = int(quantum_str)
+                
+                # Em linhas ficam as linhas com as tasks
                 linhas = [] 
                 for linha in arq:
                     linhas.append(linha.strip()) 
-                return alg_qtm, linhas
+                return [algoritmo, quantum], linhas
 
         except Exception as e:
-            print("Erro ao ler o arquivo")   
-
-
-
-
+            print(f"Erro ao ler o arquivo: {e}")
+            return None, None
