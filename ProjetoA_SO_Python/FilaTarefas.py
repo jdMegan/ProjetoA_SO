@@ -1,3 +1,5 @@
+# FilaTarefas.py
+
 class FilaTarefas:
     def __init__(self):
         # Internamente só uma lista normal
@@ -38,3 +40,6 @@ class FilaTarefas:
 
     def __repr__(self):
         return f"FilaTarefas({self._tarefas})"
+    
+    def __iter__(self):
+        return iter(self._tarefas)
