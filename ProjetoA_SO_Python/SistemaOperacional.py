@@ -49,12 +49,34 @@ class SistemaOperacional:
         for tarefa in self._tarefas:
             dados = tarefa.split(';')
             print(dados)
+
+             # Acho q aqui tem um problema, não podemos assumir que os eventos sempre iniciam no indice 4
+                # Pq teoricamente nesse lugar eh pra vir as prioridades e nao os eventos, 
+                # mesmo q nesse arquivo ele n tenho adicionado as prioridades nelhor botar alguma logica pra pegar isso,
+                # vai q na apresentacao ele usa um arq com prioridades, dai quebra o trab kkk
+
+            if len(dados) > 4:
+                # Quer dizer q existe valor de prioridade ou algum evento
+                # Se for um numero eh prio, se nao eh um evento
+                if dados[4].isdigit():
+                    prioridade1 = dados[4]
+                    # Do indice 5 em diante eh evento
+                    eventos= dados[5:]
+                else:
+                    eventos1 = dados[4:]
+
             novoTCB = TCB.TCB(
                 id=dados[0],
                 cor=int(dados[1]),  # O TCB converte pra Enum
                 ingresso=int(dados[2]),
                 duracao=int(dados[3]),
-                eventos=dados[4:]
+                # Aqui tem um problema, não podemos assumir que os eventos sempre iniciam no indice 4
+                # Pq teoricamente nesse lugar eh pra vir as prioridades e nao os eventos, 
+                # mesmo q nesse arquivo ele n tenho adicionado as prioridades nelhor botar alguma logica pra pegar isso,
+                # vai q na apresentacao ele usa um arq com prioridades, dai quebra o trab kkk
+                # eventos=dados[4:]
+                prioridade = prioridade1,
+                eventos = eventos1
             )
             print(novoTCB)
             self._tarefasCarregadas.addTask(novoTCB)

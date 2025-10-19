@@ -2,7 +2,7 @@
 from Enums import EstadoTarefa, CorTarefa
 
 class TCB:
-    def __init__(self, id, cor, ingresso, duracao, eventos):
+    def __init__(self, id, cor, ingresso, duracao, prioridade, eventos):
         self._id = id
         # Chega como int, vira ENUM
         self._cor = CorTarefa(cor)  
