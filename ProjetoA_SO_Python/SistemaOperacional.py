@@ -54,11 +54,14 @@ class SistemaOperacional:
                 # Pq teoricamente nesse lugar eh pra vir as prioridades e nao os eventos, 
                 # mesmo q nesse arquivo ele n tenho adicionado as prioridades nelhor botar alguma logica pra pegar isso,
                 # vai q na apresentacao ele usa um arq com prioridades, dai quebra o trab kkk
-
+            prioridade1 = 0
+            eventos = None
             if len(dados) > 4:
                 # Quer dizer q existe valor de prioridade ou algum evento
                 # Se for um numero eh prio, se nao eh um evento
                 if dados[4].isdigit():
+                    print( dados[4].isdigit())
+                    print(dados[4])
                     prioridade1 = dados[4]
                     # Do indice 5 em diante eh evento
                     eventos= dados[5:]
