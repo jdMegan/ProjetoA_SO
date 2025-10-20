@@ -9,7 +9,9 @@ class Escalonador:
 
     #Recebe a lista de prontas, escolhe uma, retorna ela pro so por na lista de executando
     def escolherTarefa(self, listaProntas):
-        if self._alg == AlgoritmoEscalonamento.FCFS:
+        # Na real nem tem um  algoritmo FSCS o nome certo é FCFS mesmo ou FIFO
+        # Mas como no arquivo dele ta errado, melhor manter os dois pq nao da pra saber oq ele vai pedir no arquivo de config na apresentacao
+        if self._alg == AlgoritmoEscalonamento.FCFS or self._alg == AlgoritmoEscalonamento.FSCS:
             return listaProntas.getNext()
         elif self._alg == AlgoritmoEscalonamento.PRIORIDADE_P:
             # Implementação futura

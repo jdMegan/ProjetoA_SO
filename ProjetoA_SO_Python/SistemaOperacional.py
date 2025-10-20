@@ -16,7 +16,7 @@ class SistemaOperacional:
         self._tarefasCarregadas = FilaTarefas.FilaTarefas()
         self._tarefasProntas = FilaTarefas.FilaTarefas()
         self._tarefasSuspensas = FilaTarefas.FilaTarefas()
-        self._tarefaExecutando = FilaTarefas.FilaTarefas()
+        self._tarefaExecutando = None # Variavel vazia, a principio nada executando
         self._escalonador = Escalonador.Escalonador()
         self._parser = Parser.Parser()
         #Configuraçoes do escalonador e das tarefas, respectivamente
@@ -77,7 +77,7 @@ class SistemaOperacional:
             )
             print(novoTCB)
             self._tarefasCarregadas.addTask(novoTCB)
-        
+
     def configsEscalonador(self):
         print("Configurando escalonador...")
         self._escalonador.alg = self._configuracoes[0] #ENUM
@@ -94,12 +94,20 @@ class SistemaOperacional:
 
     def atualizaCarregadas(self, tickAtual):
         #Cria uma lista temporaria para poder remover durante a iteração
-        mover = [t for t in self._tarefasCarregadas.getAll() if t.ingresso == tickAtual]
+        # Reformulei pq estava meio confuso de ler
+        # mover = [t for t in self._tarefasCarregadas.getAll() if t.ingresso == tickAtual]
+        mover = []
+        lista_carregadas = self._tarefasCarregadas.getAll()
+
+        for t in lista_carregadas:
+            if t.ingresso == tickAtual:
+                mover.append(t)
+
         #As que ingresso no tickAtual vao para a fila de prontas
         for t in mover:
             t.estado = "pronta"
             self._tarefasProntas.addTask(t)
-            self._tarefasCarregadas.removeTask(t)
+            self._tarefasCarregadas.removeTask(t)       
    
     def loopConstante(self):
         # No momento o loop para qndo todas as tarefas estiverem na fila de prontas
@@ -112,23 +120,46 @@ class SistemaOperacional:
             self.atualizaCarregadas(self._relogio.tickAtual)
             
             # Escalonador decide próxima tarefa
-            taferaExecutar = self._escalonador.escolherTarefa(self._tarefasProntas)   
-            self._tarefaExecutando.addTask(taferaExecutar)
+            print("TAREFAS PRONTAS NESSE TICK = ", self._tarefasProntas.getAll())
+            taferaExecutar = self._escalonador.escolherTarefa(self._tarefasProntas)  
+            print("TAREFA A EXECUTAR = ", taferaExecutar) 
+            self._tarefaExecutando = taferaExecutar
 
             # Executa a tarefa atual
-            #self.executarTarefa()
+            self.executarTarefa(taferaExecutar)
 
             # Atualiza hitorico
             ####self._historico.atualizarHistorico()
-            
+            #???
+
+            # Aumenta o tempo de vida de todas as tarefas
+
+
             #Passa o tempo
             self.proximoTick()
 
     #Isso ta errado
     #Não faz mto sentido tarefaExecutando estar em uma lista ja q é só uma tarefa executando por vez
     #Mas n sei. . . tranformar ela em um atributo entao?
-    #def executarTarefa(self):
-        #if (self._tarefaExecutando[0].estaConcluida):
-        #    self._tarefaExecutando[0].concluirTarefa
-        #    #Quando é concluida é removida da memoria
-        #    self._tarefaExecutando.getNext()
+    # Boa ideia!! Alterei para uma variavel/atrib simples
+
+    def executarTarefa(self, tafera):
+        # Nos priemiros ticks a tarefa vem vazia dai da erro
+        if(tafera is not None):
+            print("siutação da tarefa antes de exec  \n", "tafera._tempoExecutando=", tafera._tempoExecutando, "\n", "tafera.duracaoRestante=", tafera.duracaoRestante, "\n" )
+            tafera._tempoExecutando += 1
+            tafera.duracaoRestante -= 1
+            if (tafera.duracaoRestante == 0):
+                tafera.estado = "concluida"
+    #         # Quando é concluida é "removida" da memoria
+                tafera = None
+            print("siutação da tarefa antes de exec  \n", "tafera._tempoExecutando=", tafera._tempoExecutando, "\n", "tafera.duracaoRestante=", tafera.duracaoRestante, "\n" )
+
+
+    #     self._tarefaExecutando.tempoExecutando += 1
+    #     self._tarefaExecutando.duracaoRestante -= 1
+    #     # Se concluir
+    #     if (self._tarefaExecutando.duracaoRestante == 0):
+    #        self._tarefaExecutando.estado = "concluida"
+    #         # Quando é concluida é "removida" da memoria
+    #        self._tarefaExecutando = None
