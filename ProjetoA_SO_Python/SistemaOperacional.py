@@ -125,6 +125,15 @@ class SistemaOperacional:
             print("TAREFA A EXECUTAR = ", taferaExecutar) 
             self._tarefaExecutando = taferaExecutar
 
+            # Aumenta o tempo de vida de todas as tarefas prontas, suspensas, executando
+            for tarefa in self._tarefasProntas:
+                tarefa._tempoVida += 1
+            for tarefa in self._tarefasSuspensas:
+                tarefa._tempoVida += 1
+            if(self._tarefaExecutando is not None):
+                self._tarefaExecutando._tempoVida += 1
+
+            
             # Executa a tarefa atual
             self.executarTarefa(taferaExecutar)
 
@@ -132,8 +141,7 @@ class SistemaOperacional:
             ####self._historico.atualizarHistorico()
             #???
 
-            # Aumenta o tempo de vida de todas as tarefas
-
+            # Como manter a mesma tarefa quando o tick acaba, mas o quantum dela não acabou?? tem q ver
 
             #Passa o tempo
             self.proximoTick()
@@ -146,14 +154,14 @@ class SistemaOperacional:
     def executarTarefa(self, tafera):
         # Nos priemiros ticks a tarefa vem vazia dai da erro
         if(tafera is not None):
-            print("siutação da tarefa antes de exec  \n", "tafera._tempoExecutando=", tafera._tempoExecutando, "\n", "tafera.duracaoRestante=", tafera.duracaoRestante, "\n" )
+            print("siutação da tarefa antes de exec  \n", "tafera._tempoExecutando=", tafera._tempoExecutando, "\n", "tafera.duracaoRestante=", tafera.duracaoRestante, "\n", "tafera._tempoVida=",tafera._tempoVida)
             tafera._tempoExecutando += 1
             tafera.duracaoRestante -= 1
             if (tafera.duracaoRestante == 0):
                 tafera.estado = "concluida"
-    #         # Quando é concluida é "removida" da memoria
+                # Quando é concluida é "removida" da memoria
                 tafera = None
-            print("siutação da tarefa antes de exec  \n", "tafera._tempoExecutando=", tafera._tempoExecutando, "\n", "tafera.duracaoRestante=", tafera.duracaoRestante, "\n" )
+            print("siutação da tarefa DPS de exec  \n", "tafera._tempoExecutando=", tafera._tempoExecutando, "\n", "tafera.duracaoRestante=", tafera.duracaoRestante, "\n", "tafera._tempoVida=",tafera._tempoVida )
 
 
     #     self._tarefaExecutando.tempoExecutando += 1
