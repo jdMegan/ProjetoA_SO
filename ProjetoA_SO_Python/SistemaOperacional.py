@@ -119,30 +119,31 @@ class SistemaOperacional:
             #Ve se alguma tarefa entra agora
             self.atualizaCarregadas(self._relogio.tickAtual)
             
-            # Escalonador decide próxima tarefa
-            print("TAREFAS PRONTAS NESSE TICK = ", self._tarefasProntas.getAll())
-            taferaExecutar = self._escalonador.escolherTarefa(self._tarefasProntas)  
-            print("TAREFA A EXECUTAR = ", taferaExecutar) 
-            self._tarefaExecutando = taferaExecutar
+            # Escalonador decide próxima tarefa, se houver alguma pronta
+            if not self._tarefasProntas.isEmpty():
+                print("TAREFAS PRONTAS NESSE TICK = ", self._tarefasProntas.getAll())
+                taferaExecutar = self._escalonador.escolherTarefa(self._tarefasProntas)  
+                print("TAREFA A EXECUTAR = ", taferaExecutar) 
+                self._tarefaExecutando = taferaExecutar
 
-            # Aumenta o tempo de vida de todas as tarefas prontas, suspensas, executando
-            for tarefa in self._tarefasProntas:
-                tarefa._tempoVida += 1
-            for tarefa in self._tarefasSuspensas:
-                tarefa._tempoVida += 1
-            if(self._tarefaExecutando is not None):
-                self._tarefaExecutando._tempoVida += 1
+                # Aumenta o tempo de vida de todas as tarefas prontas, suspensas, executando
+                for tarefa in self._tarefasProntas:
+                    tarefa._tempoVida += 1
+                for tarefa in self._tarefasSuspensas:
+                    tarefa._tempoVida += 1
+                if(self._tarefaExecutando is not None):
+                    self._tarefaExecutando._tempoVida += 1
 
             
-            # Executa a tarefa atual
-            self.executarTarefa(taferaExecutar)
+                # Executa a tarefa atual
+                self.executarTarefa(taferaExecutar, self._tarefasProntas)
 
-            # Atualiza hitorico
-            ####self._historico.atualizarHistorico()
-            #???
+                # Atualiza hitorico
+                ####self._historico.atualizarHistorico()
+                #???
 
             # Como manter a mesma tarefa quando o tick acaba, mas o quantum dela não acabou?? tem q ver
-
+            print(" quantum_atual=", self._escalonador._quantum_atual)
             #Passa o tempo
             self.proximoTick()
 
@@ -151,17 +152,21 @@ class SistemaOperacional:
     #Mas n sei. . . tranformar ela em um atributo entao?
     # Boa ideia!! Alterei para uma variavel/atrib simples
 
-    def executarTarefa(self, tafera):
+    def executarTarefa(self, tarefa, listaProntas):
         # Nos priemiros ticks a tarefa vem vazia dai da erro
-        if(tafera is not None):
-            print("siutação da tarefa antes de exec  \n", "tafera._tempoExecutando=", tafera._tempoExecutando, "\n", "tafera.duracaoRestante=", tafera.duracaoRestante, "\n", "tafera._tempoVida=",tafera._tempoVida)
-            tafera._tempoExecutando += 1
-            tafera.duracaoRestante -= 1
-            if (tafera.duracaoRestante == 0):
-                tafera.estado = "concluida"
+        if(tarefa is not None):
+            tarefa.estado = "executando"
+            print("siutação da tarefa antes de exec  \n", "tafera._tempoExecutando=", tarefa._tempoExecutando, "\n", "tafera.duracaoRestante=", tarefa.duracaoRestante, "\n", "tafera._tempoVida=",tarefa._tempoVida)
+            tarefa._tempoExecutando += 1
+            tarefa.duracaoRestante -= 1
+            self._escalonador.reajustaTarefaFCFS(tarefa, listaProntas)
+            if (tarefa.duracaoRestante == 0):
+                tarefa.estado = "concluida"
                 # Quando é concluida é "removida" da memoria
-                tafera = None
-            print("siutação da tarefa DPS de exec  \n", "tafera._tempoExecutando=", tafera._tempoExecutando, "\n", "tafera.duracaoRestante=", tafera.duracaoRestante, "\n", "tafera._tempoVida=",tafera._tempoVida )
+                tarefa = None
+                # Reseta a contagem do quantum
+                self._escalonador._quantum_atual = 0
+            print("siutação da tarefa DPS de exec  \n", "tafera._tempoExecutando=", tarefa._tempoExecutando, "\n", "tafera.duracaoRestante=", tarefa.duracaoRestante, "\n", "tafera._tempoVida=",tarefa._tempoVida )
 
 
     #     self._tarefaExecutando.tempoExecutando += 1

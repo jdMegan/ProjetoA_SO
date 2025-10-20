@@ -9,6 +9,10 @@ class FilaTarefas:
         #Adiciona uma tarefa ao final da fila
         self._tarefas.append(tcb)
 
+    def addFirstTask(self, tcb):
+        #Adiciona uma tarefa no inicio da fila
+        self._tarefas.insert(0, tcb)
+
     def removeTask(self, tcb):
         #Remove uma tarefa específica da fila
         if tcb in self._tarefas:
