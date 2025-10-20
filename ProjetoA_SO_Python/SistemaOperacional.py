@@ -60,8 +60,6 @@ class SistemaOperacional:
                 # Quer dizer q existe valor de prioridade ou algum evento
                 # Se for um numero eh prio, se nao eh um evento
                 if dados[4].isdigit():
-                    print( dados[4].isdigit())
-                    print(dados[4])
                     prioridade1 = dados[4]
                     # Do indice 5 em diante eh evento
                     eventos= dados[5:]
@@ -73,10 +71,6 @@ class SistemaOperacional:
                 cor=int(dados[1]),  # O TCB converte pra Enum
                 ingresso=int(dados[2]),
                 duracao=int(dados[3]),
-                # Aqui tem um problema, não podemos assumir que os eventos sempre iniciam no indice 4
-                # Pq teoricamente nesse lugar eh pra vir as prioridades e nao os eventos, 
-                # mesmo q nesse arquivo ele n tenho adicionado as prioridades nelhor botar alguma logica pra pegar isso,
-                # vai q na apresentacao ele usa um arq com prioridades, dai quebra o trab kkk
                 # eventos=dados[4:]
                 prioridade = prioridade1,
                 eventos = eventos1

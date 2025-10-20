@@ -28,6 +28,7 @@ class TCB:
             f"duracao = {self._duracao}, "
             f"duracaoRestante = {self._duracaoRestante}, "
             f"prioridade = {self._prioridade}, "
+            f"eventos = {self._eventos}, "
             f"estado = {self._estado}, "
             f"tempoVida = {self._tempoVida}), "
             f"tempoExecutando = {self._tempoExecutando}) "
