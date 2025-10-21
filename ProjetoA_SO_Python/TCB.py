@@ -33,6 +33,15 @@ class TCB:
             f"tempoVida = {self._tempoVida}), "
             f"tempoExecutando = {self._tempoExecutando}) "
         )
+    
+    def incrementaTempoVida(self):
+        self._tempoVida += 1
+
+    def incrementaTempoExecutando(self):
+        self._tempoExecutando += 1
+
+    def decrementaDuracaoRestante(self):
+        self._duracaoRestante -= 1
         
     # Getters e setters
     @property
