@@ -45,8 +45,11 @@ class Escalonador:
                 self._tar_quantum_anterior = tarefa
             # Se ainda tiver quantum e ela nao foi a ultima a executar
             print("self._tar_quantum_anterior=", self._tar_quantum_anterior)
-            print((self._quantum_atual <= self._quantum) & (tarefa is not self._tar_quantum_anterior))
-            if (self._quantum_atual <= self._quantum) & (tarefa is not self._tar_quantum_anterior):
+            print((self._quantum_atual <= self._quantum) & (tarefa is not self._tar_quantum_anterior) 
+                  )
+            if ((self._quantum_atual <= self._quantum) 
+                & (tarefa is not self._tar_quantum_anterior)
+                & (tarefa._duracaoRestante is not 0)):
                 listaProntas.addFirstTask(tarefa)
             else:
                 if(tarefa.duracaoRestante > 0):

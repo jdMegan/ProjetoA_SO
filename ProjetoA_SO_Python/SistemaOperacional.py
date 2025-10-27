@@ -113,13 +113,25 @@ class SistemaOperacional:
     def loopConstante(self):
         # No momento o loop para qndo todas as tarefas estiverem na fila de prontas
         # No futuro vai parar quando nao tiver mais nenhuma pronta e executando
-        # while not (self._tarefasCarregadas.isEmpty() 
-        #   and self._tarefasProntas.isEmpty() 
-        #   and self._tarefaExecutando.isEmpty()):
-        while not self._tarefasCarregadas.isEmpty() :
+        while (not self._tarefasCarregadas.isEmpty() or 
+            not self._tarefasProntas.isEmpty() or 
+            self._tarefaExecutando is not None):
+        # while not self._tarefasCarregadas.isEmpty() :
             #Ve se alguma tarefa entra agora
             self.atualizaCarregadas(self._relogio.tickAtual)
-            
+
+            # Reajusta a tarefa q rodou no tick anterior
+            # Esse reajuste precisa ser feito depois q as novas tarefas ingressantes entram
+            # Pq a tarefa atual entra soh no final da fila
+            if (self._tarefaExecutando is not None):
+                self._escalonador.reajustaTarefa(tarefaExecutar, self._tarefasProntas)
+                if (tarefaExecutar.duracaoRestante == 0):
+                    tarefaExecutar.estado = "concluida"
+                    # Quando é concluida é "removida" da memoria
+                    self._tarefaExecutando = None
+                    # Reseta a contagem do quantum
+                    self._escalonador.resetaQuantumAtual
+
             # Escalonador decide próxima tarefa, se houver alguma pronta
             if not self._tarefasProntas.isEmpty():
                 print("TAREFAS PRONTAS NESSE TICK = ", self._tarefasProntas.getAll())
@@ -147,8 +159,8 @@ class SistemaOperacional:
                     tarefa.incrementaTempoVida()
                 for tarefa in self._tarefasSuspensas:
                     tarefa.incrementaTempoVida()
-                # if(self._tarefaExecutando is not None):
-                # self._tarefaExecutando.incrementaTempoVida()
+                if(self._tarefaExecutando is not None):
+                    self._tarefaExecutando.incrementaTempoVida()
 
                 print( tarefaExecutar.id, "DPS de exec  \n", "tafera._tempoExecutando=", tarefaExecutar._tempoExecutando, "\n", "tafera.duracaoRestante=", tarefaExecutar.duracaoRestante, "\n", "tafera._tempoVida=",tarefaExecutar._tempoVida )
                 print("quantum DEPOIS de exec tarefa:", self._escalonador._quantum_atual)
@@ -170,14 +182,9 @@ class SistemaOperacional:
             tarefa.decrementaDuracaoRestante()
             print(tarefa.id, "executou...")
 
-            if (tarefa.duracaoRestante == 0):
-                tarefa.estado = "concluida"
-                # Quando é concluida é "removida" da memoria
-                tarefa = None
-                # Reseta a contagem do quantum
-                self._escalonador.resetaQuantumAtual
-            else:
-                self._escalonador.reajustaTarefa(tarefa, listaProntas)
+
+            # else:
+            #     self._escalonador.reajustaTarefa(tarefa, listaProntas)
         
 
     #     self._tarefaExecutando.tempoExecutando += 1
@@ -187,3 +194,4 @@ class SistemaOperacional:
     #        self._tarefaExecutando.estado = "concluida"
     #         # Quando é concluida é "removida" da memoria
     #        self._tarefaExecutando = None
+
