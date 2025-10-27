@@ -9,6 +9,8 @@ import FilaTarefas
 import Parser
 import Escalonador
 import TCB
+import View
+
 class SistemaOperacional:
     def __init__(self,nome_config):
         self._relogio = Clock.Clock()
@@ -19,11 +21,14 @@ class SistemaOperacional:
         self._tarefaExecutando = None # Variavel vazia, a principio nada executando
         self._escalonador = Escalonador.Escalonador()
         self._parser = Parser.Parser()
+        self._historico = [] # O historico vai consistir em uma lista de "registro" do estado de cada tick
         #Configuraçoes do escalonador e das tarefas, respectivamente
         self._configuracoes = None
         self._tarefas = []
+        self._todos_tcbs = []
         #Recebe o nome do arquivo com as configurações para começar
         self.comecar(nome_config)
+        
 
     def comecar(self,nome_config):
         print("Iniciando Sistema Operacional...")
@@ -77,6 +82,7 @@ class SistemaOperacional:
             )
             print(novoTCB)
             self._tarefasCarregadas.addTask(novoTCB)
+            self._todos_tcbs.append(novoTCB)
 
     def configsEscalonador(self):
         print("Configurando escalonador...")
@@ -166,8 +172,17 @@ class SistemaOperacional:
                 print("quantum DEPOIS de exec tarefa:", self._escalonador._quantum_atual)
 
             print(" quantum_atual=", self._escalonador._quantum_atual)
+            
+            # Registra o estado do tick no historico para montar o grafico dps
+            self.registrarTickNoHistorico()
+
             #Passa o tempo
             self.proximoTick()
+        
+        # Acaba e gera o grafico
+        print(f"=== FIM ===")
+        View.gerar_grafico(self._historico, self._todos_tcbs)
+        
 
     #Isso ta errado
     #Não faz mto sentido tarefaExecutando estar em uma lista ja q é só uma tarefa executando por vez
@@ -195,3 +210,28 @@ class SistemaOperacional:
     #         # Quando é concluida é "removida" da memoria
     #        self._tarefaExecutando = None
 
+    def registrarTickNoHistorico(self):
+        tick_atual = self._relogio.tickAtual
+
+        if(self._tarefaExecutando is not None):
+            id_executando = self._tarefaExecutando.id
+            cor_executando = self._tarefaExecutando.cor
+        else:
+            id_executando = "OCIOSA"
+            cor_executando = "CINZA"
+
+        ids_prontas = [t.id for t in self._tarefasProntas.getAll()]
+        ids_suspensas= [t.id for t in self._tarefasSuspensas.getAll()]
+
+        # Cria e add o "registro" do tick no historico
+        registro = {
+            'tick': tick_atual,
+            'executando_id': id_executando,
+            'executando_cor': cor_executando,
+            'prontas': ids_prontas,
+            'suspensas': ids_suspensas
+        }
+        self._historico.append(registro)
+        
+        print(f"[HISTÓRICO] Tick {tick_atual}: CPU -> {id_executando}")
+        print(f"Prontas: {[t.id for t in self._tarefasProntas.getAll()]}")
