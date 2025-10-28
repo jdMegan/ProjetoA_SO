@@ -48,47 +48,48 @@ class SistemaOperacional:
 
     def criarTasks(self):
         print("Criando tasks...")
-        #_tarefas é um list
-        #Cada elemento é um string com dados de uma unica task separados por ;
-        #Aqui separa esses dados e usa para criar task
         for tarefa in self._tarefas:
             dados = tarefa.split(';')
-            print(dados)
+            print(f"Dados da tarefa: {dados}")
 
-             # Acho q aqui tem um problema, não podemos assumir que os eventos sempre iniciam no indice 4
-                # Pq teoricamente nesse lugar eh pra vir as prioridades e nao os eventos, 
-                # mesmo q nesse arquivo ele n tenho adicionado as prioridades nelhor botar alguma logica pra pegar isso,
-                # vai q na apresentacao ele usa um arq com prioridades, dai quebra o trab kkk
-            prioridade1 = 0
-            eventos = None
+            # Lógica para prioridade e eventos
+            prioridade = 0
+            eventos = []
+            
             if len(dados) > 4:
-                # Quer dizer q existe valor de prioridade ou algum evento
-                # Se for um numero eh prio, se nao eh um evento
+                # Se o quarto elemento é um dígito, é prioridade
                 if dados[4].isdigit():
-                    prioridade1 = dados[4]
-                    # Do indice 5 em diante eh evento
-                    eventos= dados[5:]
+                    prioridade = int(dados[4])
+                    # Do índice 5 em diante são eventos
+                    eventos = dados[5:] if len(dados) > 5 else []
                 else:
-                    eventos1 = dados[4:]
+                    # Do índice 4 em diante são eventos
+                    eventos = dados[4:]
 
+            # CORREÇÃO: Use a classe TCB diretamente do módulo
             novoTCB = TCB.TCB(
                 id=dados[0],
-                cor=int(dados[1]),  # O TCB converte pra Enum
+                cor=int(dados[1]),
                 ingresso=int(dados[2]),
                 duracao=int(dados[3]),
-                # eventos=dados[4:]
-                prioridade = prioridade1,
-                eventos = eventos1
+                prioridade=prioridade,
+                eventos=eventos
             )
-            print(novoTCB)
+            print(f"TCB criado: {novoTCB}")
             self._tarefasCarregadas.addTask(novoTCB)
             self._todos_tcbs.append(novoTCB)
 
     def configsEscalonador(self):
+        #print("Configurando escalonador...")
+        #self._escalonador.alg = self._configuracoes[0] #ENUM
+        #self._escalonador.quantum = self._configuracoes[1] #int
+        #self._escalonador._quantum_atual = self._configuracoes[1]
+        
         print("Configurando escalonador...")
-        self._escalonador.alg = self._configuracoes[0] #ENUM
-        self._escalonador.quantum = self._configuracoes[1] #int
-        self._escalonador._quantum_atual = self._configuracoes[1]
+        self._escalonador.alg = self._configuracoes[0]  # ENUM
+        self._escalonador.quantum = self._configuracoes[1]  # int
+        print(f"Algoritmo: {self._escalonador.alg}, Quantum: {self._escalonador.quantum}")
+
 
     def atualizaHistorico():
         # Atualiza o historico a cada tick
@@ -100,9 +101,7 @@ class SistemaOperacional:
         print(f"=== Tick {novoTick} ===")
 
     def atualizaCarregadas(self, tickAtual):
-        #Cria uma lista temporaria para poder remover durante a iteração
-        # Reformulei pq estava meio confuso de ler
-        # mover = [t for t in self._tarefasCarregadas.getAll() if t.ingresso == tickAtual]
+      # Cria uma lista temporaria para poder remover durante a iteração
         mover = []
         lista_carregadas = self._tarefasCarregadas.getAll()
 
@@ -110,69 +109,65 @@ class SistemaOperacional:
             if t.ingresso == tickAtual:
                 mover.append(t)
 
-        #As que ingresso no tickAtual vao para a fila de prontas
+       # As que ingresso no tickAtual vao para a fila de prontas
         for t in mover:
             t.estado = "pronta"
             self._tarefasProntas.addTask(t)
-            self._tarefasCarregadas.removeTask(t)       
-   
+            self._tarefasCarregadas.removeTask(t)
+            print(f"Tarefa {t.id} movida para PRONTA no tick {tickAtual}")
+
     def loopConstante(self):
-        # No momento o loop para qndo todas as tarefas estiverem na fila de prontas
-        # No futuro vai parar quando nao tiver mais nenhuma pronta e executando
+        # Para quando não há mais tarefas para executar
         while (not self._tarefasCarregadas.isEmpty() or 
-            not self._tarefasProntas.isEmpty() or 
-            self._tarefaExecutando is not None):
-        # while not self._tarefasCarregadas.isEmpty() :
-            #Ve se alguma tarefa entra agora
+               not self._tarefasProntas.isEmpty() or 
+               self._tarefaExecutando is not None):
+            
+            # Ve se alguma tarefa entra agora
             self.atualizaCarregadas(self._relogio.tickAtual)
-
-            # Reajusta a tarefa q rodou no tick anterior
-            # Esse reajuste precisa ser feito depois q as novas tarefas ingressantes entram
-            # Pq a tarefa atual entra soh no final da fila
-            if (self._tarefaExecutando is not None):
-                self._escalonador.reajustaTarefa(tarefaExecutar, self._tarefasProntas)
-                if (tarefaExecutar.duracaoRestante == 0):
-                    tarefaExecutar.estado = "concluida"
-                    # Quando é concluida é "removida" da memoria
-                    self._tarefaExecutando = None
-                    # Reseta a contagem do quantum
-                    self._escalonador.resetaQuantumAtual
-
+            
+            # VERIFICA SE TAREFA ATUAL TERMINOU
+            if self._tarefaExecutando and self._tarefaExecutando.estaConcluida():
+                print(f"=== TAREFA {self._tarefaExecutando.id} CONCLUÍDA ===")
+                self._tarefaExecutando.estado = "concluida"
+                self._tarefaExecutando = None
+            
             # Escalonador decide próxima tarefa, se houver alguma pronta
             if not self._tarefasProntas.isEmpty():
-                print("TAREFAS PRONTAS NESSE TICK = ", self._tarefasProntas.getAll())
-
-
-                tarefaExecutar = self._escalonador.escolherTarefa(self._tarefasProntas)  
-                print("quantum ANTES de exec tarefa:", self._escalonador._quantum_atual)
-
-                print("TAREFA A EXECUTAR = ", tarefaExecutar) 
+                print("TAREFAS PRONTAS: ", [t.id for t in self._tarefasProntas.getAll()])
+                
+                tarefaExecutar = self._escalonador.escolherTarefa(
+                    self._tarefasProntas, 
+                    self._tarefaExecutando
+                )
+                
+                # SE É UMA NOVA TAREFA, A ATUAL VOLTA PARA FILA (se existir e não terminou)
+                if (tarefaExecutar and 
+                    tarefaExecutar != self._tarefaExecutando and 
+                    self._tarefaExecutando and 
+                    not self._tarefaExecutando.estaConcluida()):
+                    
+                    print(f"Tarefa {self._tarefaExecutando.id} volta para fila de prontas")
+                    self._tarefaExecutando.estado = "pronta"
+                    self._tarefasProntas.addTask(self._tarefaExecutando)
+                
                 self._tarefaExecutando = tarefaExecutar
-
-                print( tarefaExecutar.id, "ANTES de exec  \n", "tafera._tempoExecutando=", tarefaExecutar._tempoExecutando, "\n", "tafera.duracaoRestante=", tarefaExecutar.duracaoRestante, "\n", "tafera._tempoVida=",tarefaExecutar._tempoVida)
-
-                # Executa a tarefa atual
-                self.executarTarefa(tarefaExecutar, self._tarefasProntas)
-
-
+                
+                if self._tarefaExecutando:
+                    print(f"TAREFA A EXECUTAR: {self._tarefaExecutando.id}")
+                    print(f"QUANTUM ATUAL: {self._tarefaExecutando.tempoExecutando}/{self._escalonador.quantum}")
+                    
+                    self.executarTarefa(self._tarefaExecutando, self._tarefasProntas)
+            
+            # Aumenta o tempo de vida de todas as tarefas prontas
+            for tarefa in self._tarefasProntas:
+                tarefa.incrementaTempoVida()
+            for tarefa in self._tarefasSuspensas:
+                tarefa.incrementaTempoVida()
 
                 # Atualiza hitorico
                 ####self._historico.atualizarHistorico()
                 #???
 
-                # Aumenta o tempo de vida de todas as tarefas prontas, suspensas
-                for tarefa in self._tarefasProntas:
-                    tarefa.incrementaTempoVida()
-                for tarefa in self._tarefasSuspensas:
-                    tarefa.incrementaTempoVida()
-                if(self._tarefaExecutando is not None):
-                    self._tarefaExecutando.incrementaTempoVida()
-
-                print( tarefaExecutar.id, "DPS de exec  \n", "tafera._tempoExecutando=", tarefaExecutar._tempoExecutando, "\n", "tafera.duracaoRestante=", tarefaExecutar.duracaoRestante, "\n", "tafera._tempoVida=",tarefaExecutar._tempoVida )
-                print("quantum DEPOIS de exec tarefa:", self._escalonador._quantum_atual)
-
-            print(" quantum_atual=", self._escalonador._quantum_atual)
-            
             # Registra o estado do tick no historico para montar o grafico dps
             self.registrarTickNoHistorico()
 
@@ -180,35 +175,22 @@ class SistemaOperacional:
             self.proximoTick()
         
         # Acaba e gera o grafico
-        print(f"=== FIM ===")
+        print("=== TODAS AS TAREFAS CONCLUÍDAS ===")
         View.gerar_grafico(self._historico, self._todos_tcbs)
         
 
-    #Isso ta errado
-    #Não faz mto sentido tarefaExecutando estar em uma lista ja q é só uma tarefa executando por vez
-    #Mas n sei. . . tranformar ela em um atributo entao?
-    # Boa ideia!! Alterei para uma variavel/atrib simples
 
     def executarTarefa(self, tarefa, listaProntas):
-        # Nos priemiros ticks a tarefa vem vazia dai da erro
-        if(tarefa is not None):
+        if tarefa is not None:
             tarefa.estado = "executando"
-            tarefa.incrementaTempoExecutando()
-            tarefa.decrementaDuracaoRestante()
-            print(tarefa.id, "executou...")
+            tarefa.executarTick()
+            print(f"{tarefa.id} executou... (Restante: {tarefa.duracaoRestante})")
 
-
-            # else:
-            #     self._escalonador.reajustaTarefa(tarefa, listaProntas)
-        
-
-    #     self._tarefaExecutando.tempoExecutando += 1
-    #     self._tarefaExecutando.duracaoRestante -= 1
-    #     # Se concluir
-    #     if (self._tarefaExecutando.duracaoRestante == 0):
-    #        self._tarefaExecutando.estado = "concluida"
-    #         # Quando é concluida é "removida" da memoria
-    #        self._tarefaExecutando = None
+            if tarefa.estaConcluida():
+                print(f"=== TAREFA {tarefa.id} CONCLUÍDA! ===")
+                tarefa.estado = "concluida"
+                tarefa.concluirTarefa()
+                self._tarefaExecutando = None
 
     def registrarTickNoHistorico(self):
         tick_atual = self._relogio.tickAtual
