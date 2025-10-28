@@ -47,17 +47,18 @@ class TCB:
         # Reseta o contador de tempo no quantum
         self._tempoExecutando = 0
 
-    def executarTick(self):
-        # Incrementa tempo no quantum
-        # Incrementa tempo de vida
-        # Decrementa quanto ainda falta
-        self._tempoExecutando += 1
-        self._tempoVida += 1
-        self._duracaoRestante -= 1
-
     def estaConcluida(self):
         # Verifica se esta concluida
         return self._duracaoRestante <= 0
+
+    def executarTick(self):
+        # Só executa se não estiver concluída
+        if not self.estaConcluida():
+            self._tempoExecutando += 1
+            self._tempoVida += 1
+            self._duracaoRestante -= 1
+        else:
+            print(f"AVISO: Tentativa de executar tarefa {self._id} já concluída!")
 
     def concluirTarefa(self):
         # Marca a tarefa como concluida
