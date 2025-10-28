@@ -1,5 +1,6 @@
 from Enums import AlgoritmoEscalonamento
 
+
 class Escalonador:
     def __init__(self):
         self._quantum = None
@@ -10,14 +11,19 @@ class Escalonador:
         if tarefaExecutando:
             print(f"DEBUG: Tarefa atual: {tarefaExecutando.id}, "
                   f"Ingresso: {tarefaExecutando.ingresso}, "
-                  f"Duraçã0: {tarefaExecutando.duracao}, "
+                  f"Duração: {tarefaExecutando.duracao}, "
                   f"TempoExec: {tarefaExecutando.tempoExecutando}, "
-                  f"Duraçã0: {tarefaExecutando.duracaoRestante}, "
-                  f"TempoVIda: {tarefaExecutando.tempoVida}, "     
+                  f"DuraçãoRestante: {tarefaExecutando.duracaoRestante}, "
+                  f"TempoVida: {tarefaExecutando.tempoVida}, "     
                   f"PassouQuantum: {tarefaExecutando.passouQuantum(self._quantum)}")
         
         if self._alg == AlgoritmoEscalonamento.FCFS or self._alg == AlgoritmoEscalonamento.FSCS:
-            # Primeiro checa se ja tem alguma tarefa selecionada e se ela ainda tem quantum
+            # PRIMEIRO: Verifica se a tarefa atual terminou
+            if tarefaExecutando and tarefaExecutando.estaConcluida():
+                print(f"DEBUG: Tarefa {tarefaExecutando.id} já está concluída")
+                tarefaExecutando = None
+            
+            # SEGUNDO: Escolhe a próxima tarefa
             if tarefaExecutando is None: 
                 print("DEBUG: Nenhuma tarefa executando, pegando próxima da fila")
                 tarefa_escolhida = listaProntas.getNext()
@@ -25,6 +31,8 @@ class Escalonador:
                 print(f"DEBUG: Tarefa {tarefaExecutando.id} passou do quantum! "
                       f"({tarefaExecutando.tempoExecutando} >= {self._quantum})")
                 tarefaExecutando.resetQuantum()
+                # CORREÇÃO: Remove a tarefa da fila se já estiver nela antes de adicionar
+                listaProntas.removeTask(tarefaExecutando)
                 listaProntas.addTask(tarefaExecutando)
                 tarefa_escolhida = listaProntas.getNext()
             else:
