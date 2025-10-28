@@ -98,7 +98,7 @@ class SistemaOperacional:
     def proximoTick(self):
         #Avança o tempo
         novoTick = self._relogio.proximoTick()
-        print(f"=== Tick {novoTick} ===")
+        print(f"\n=== Tick {novoTick} ===")
 
     def atualizaCarregadas(self, tickAtual):
       # Cria uma lista temporaria para poder remover durante a iteração
@@ -119,20 +119,20 @@ class SistemaOperacional:
     def loopConstante(self):
         # Para quando não há mais tarefas para executar
         while (not self._tarefasCarregadas.isEmpty() or 
-               not self._tarefasProntas.isEmpty() or 
-               self._tarefaExecutando is not None):
+            not self._tarefasProntas.isEmpty() or 
+            self._tarefaExecutando is not None):
             
             # Ve se alguma tarefa entra agora
             self.atualizaCarregadas(self._relogio.tickAtual)
             
-            # VERIFICA SE TAREFA ATUAL TERMINOU
+            # VERIFICA SE TAREFA ATUAL TERMINOU (ANTES do escalonador)
             if self._tarefaExecutando and self._tarefaExecutando.estaConcluida():
                 print(f"=== TAREFA {self._tarefaExecutando.id} CONCLUÍDA ===")
                 self._tarefaExecutando.estado = "concluida"
                 self._tarefaExecutando = None
             
             # Escalonador decide próxima tarefa, se houver alguma pronta
-            if not self._tarefasProntas.isEmpty():
+            if not self._tarefasProntas.isEmpty() or self._tarefaExecutando is not None:
                 print("TAREFAS PRONTAS: ", [t.id for t in self._tarefasProntas.getAll()])
                 
                 tarefaExecutar = self._escalonador.escolherTarefa(
@@ -140,7 +140,7 @@ class SistemaOperacional:
                     self._tarefaExecutando
                 )
                 
-                # SE É UMA NOVA TAREFA, A ATUAL VOLTA PARA FILA (se existir e não terminou)
+                # CORREÇÃO: Só faz o swap se for uma tarefa diferente E a atual não estiver concluída
                 if (tarefaExecutar and 
                     tarefaExecutar != self._tarefaExecutando and 
                     self._tarefaExecutando and 
@@ -148,6 +148,9 @@ class SistemaOperacional:
                     
                     print(f"Tarefa {self._tarefaExecutando.id} volta para fila de prontas")
                     self._tarefaExecutando.estado = "pronta"
+                    self._tarefaExecutando.resetQuantum()
+                    # CORREÇÃO: Remove antes de adicionar para evitar duplicação
+                    self._tarefasProntas.removeTask(self._tarefaExecutando)
                     self._tarefasProntas.addTask(self._tarefaExecutando)
                 
                 self._tarefaExecutando = tarefaExecutar
@@ -164,10 +167,6 @@ class SistemaOperacional:
             for tarefa in self._tarefasSuspensas:
                 tarefa.incrementaTempoVida()
 
-                # Atualiza hitorico
-                ####self._historico.atualizarHistorico()
-                #???
-
             # Registra o estado do tick no historico para montar o grafico dps
             self.registrarTickNoHistorico()
 
@@ -177,7 +176,6 @@ class SistemaOperacional:
         # Acaba e gera o grafico
         print("=== TODAS AS TAREFAS CONCLUÍDAS ===")
         View.gerar_grafico(self._historico, self._todos_tcbs)
-        
 
 
     def executarTarefa(self, tarefa, listaProntas):
@@ -216,4 +214,5 @@ class SistemaOperacional:
         self._historico.append(registro)
         
         print(f"[HISTÓRICO] Tick {tick_atual}: CPU -> {id_executando}")
+        print(f"Registro: {registro}")
         print(f"Prontas: {[t.id for t in self._tarefasProntas.getAll()]}")
