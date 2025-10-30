@@ -27,6 +27,12 @@ class FilaTarefas:
 
     def isEmpty(self):
         return len(self._tarefas) == 0
+    
+    def contem(self, tcb_para_buscar):
+        if tcb_para_buscar in self._tarefas:
+            return True
+        else:
+            return False
 
     def __len__(self):
         return len(self._tarefas)
