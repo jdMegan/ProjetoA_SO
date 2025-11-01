@@ -1,3 +1,4 @@
+import sys
 import Clock
 import FilaTarefas
 import Parser
@@ -26,6 +27,9 @@ class SistemaOperacional:
         print("Iniciando Sistema Operacional...")
         print("=== Tick 0 ===")
         self.parseConfigs(nome_config)
+        if self._configuracoes is None:
+            print("Encerrando o sistema!")
+            sys.exit(1)
         self.configsEscalonador()
         self.criarTasks()
         self.loopConstante()
@@ -55,14 +59,7 @@ class SistemaOperacional:
             self._todos_tcbs.append(novo)
             print(f"TCB criado: {novo}")
 
-    def configsEscalonador(self):
-        
-        # TODOOOOO
-        # Na hora de atribuir o algoritmo fazer uma função que identifica, tipo:
-        # Se esta FSCS e tem quantum, vira RR, se nao, mantem FCFS pq FSCS é o FIFO e nao usa quantum
-        # e por exemplo se for PRIO e nenhum tiver prioridade, ja retorna um erro
-        # pq eu falaram q ele vai meter um monte de pegadinha pra tentar quebrar o sistema e tals
-        
+    def configsEscalonador(self):        
         self._escalonador.alg = self._configuracoes[0]
         self._escalonador.quantum = self._configuracoes[1]
         print(f"Configurando escalonador...")

@@ -11,7 +11,7 @@ class Escalonador:
                 return listaProntas.getNext()
             return tarefaExecutando
 
-        elif self._alg == AlgoritmoEscalonamento.FSCS or self._alg == AlgoritmoEscalonamento.ROUND_ROBIN:
+        elif self._alg == AlgoritmoEscalonamento.ROUND_ROBIN:
             # Round Robin (FSCS)
             if (tarefaExecutando is None or tarefaExecutando.estaConcluida()):
                 return listaProntas.getNext()

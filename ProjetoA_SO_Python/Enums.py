@@ -12,7 +12,6 @@ class EstadoTarefa(Enum):
 
 class AlgoritmoEscalonamento(Enum):
     FCFS = "FCFS"
-    FSCS = "FSCS"
     SJF = "SJF"
     SRTF = "SRTF" 
     PRIORIDADE_P = "PRIOP"
