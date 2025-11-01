@@ -56,6 +56,13 @@ class SistemaOperacional:
             print(f"TCB criado: {novo}")
 
     def configsEscalonador(self):
+        
+        # TODOOOOO
+        # Na hora de atribuir o algoritmo fazer uma função que identifica, tipo:
+        # Se esta FSCS e tem quantum, vira RR, se nao, mantem FCFS pq FSCS é o FIFO e nao usa quantum
+        # e por exemplo se for PRIO e nenhum tiver prioridade, ja retorna um erro
+        # pq eu falaram q ele vai meter um monte de pegadinha pra tentar quebrar o sistema e tals
+        
         self._escalonador.alg = self._configuracoes[0]
         self._escalonador.quantum = self._configuracoes[1]
         print(f"Configurando escalonador...")

@@ -4,4 +4,6 @@ import SistemaOperacional
 
 # Observar que como nao existem prioridades no ex do professor eu tive q 
 # adicionar prioridades simuladas ao exemplo
-so = SistemaOperacional.SistemaOperacional("arquivo-configuracao-PRIOP5.txt")
+# so = SistemaOperacional.SistemaOperacional("arquivo-configuracao-PRIOP5.txt")
+
+so = SistemaOperacional.SistemaOperacional("arquivo-configuracao-SRTF2.txt")

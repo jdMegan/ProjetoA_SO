@@ -24,12 +24,27 @@ class Escalonador:
 
         elif self._alg == AlgoritmoEscalonamento.SRTF:
             # Shortest Remaining Time First (preemptivo)
-            if not listaProntas.isEmpty():
-                todas = listaProntas.getAll()
-                if tarefaExecutando:
-                    todas.append(tarefaExecutando)
-                return min(todas, key=lambda t: t.duracaoRestante)
-            return tarefaExecutando
+            if tarefaExecutando and tarefaExecutando.estaConcluida():
+                tarefaExecutando = None            
+            todas = listaProntas.getAll()
+            tarefa_anterior = tarefaExecutando
+            if tarefa_anterior:
+                todas.append(tarefa_anterior)
+            if not todas:
+                return None 
+            tarefa_menor_dur = min(todas, key=lambda t: (t.duracaoRestante, t.ingresso)) # quando tem empate na duracao restante olha para quem entrou primeiro
+            # Se a tarefa escolhida é a mesma que já estava na CPU, não faz nada.
+            if tarefa_menor_dur == tarefa_anterior:
+                return tarefa_anterior           
+            # Se a melhor tarefa é dif da que esta executando eh pq teve preempcao            
+            if tarefa_anterior is not None:
+                if not tarefa_anterior.estaConcluida():
+                    tarefa_anterior.estado = "pronta"
+                    listaProntas.addTask(tarefa_anterior) # Volta para a fila de pronta
+            # A nova tarefa n pode ficar na fila e na CPU
+            if listaProntas.contem(tarefa_menor_dur):
+                listaProntas.removeTask(tarefa_menor_dur)
+            return tarefa_menor_dur
 
         elif self._alg == AlgoritmoEscalonamento.PRIORIDADE_P:
             if tarefaExecutando and tarefaExecutando.estaConcluida():
@@ -48,7 +63,8 @@ class Escalonador:
             if tarefaExecutando is not None:
                 if not tarefaExecutando.estaConcluida():
                     tarefaExecutando.estado = "pronta"
-                    listaProntas.addTask(tarefaExecutando) # Volta para o final
+                    listaProntas.addTask(tarefaExecutando) # Volta para a fila de pronta
+            # A nova tarefa n pode ficar na fila e na CPU
             if listaProntas.contem(tarefa_maior_prio):
                 listaProntas.removeTask(tarefa_maior_prio)
             return tarefa_maior_prio
