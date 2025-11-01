@@ -20,12 +20,18 @@ class SistemaOperacional:
         self._tarefas = []
         self._historico = []
         self._todos_tcbs = []
+        self._modo_debug = False
 
         self.comecar(nome_config)
 
     def comecar(self, nome_config):
         print("Iniciando Sistema Operacional...")
-        print("=== Tick 0 ===")
+
+        #Opção do modo debug
+        self.configurarModoDebug()
+
+        if (self._modo_debug):
+            print("=== Tick 0 ===")
         self.parseConfigs(nome_config)
         if self._configuracoes is None:
             print("Encerrando o sistema!")
@@ -35,11 +41,13 @@ class SistemaOperacional:
         self.loopConstante()
 
     def parseConfigs(self, nome_config):
-        print("Lendo configurações...")
+        if (self._modo_debug):
+            print("Lendo configurações...")
         self._configuracoes, self._tarefas = self._parser.lerConfigs(nome_config)
 
     def criarTasks(self):
-        print("Criando tasks...")
+        if (self._modo_debug):
+            print("Criando tasks...")
         for linha in self._tarefas:
             dados = linha.split(';')
             if len(dados) < 5:
@@ -57,13 +65,15 @@ class SistemaOperacional:
             novo = TCB.TCB(id, cor, ingresso, duracao, prioridade, eventos)
             self._tarefasCarregadas.addTask(novo)
             self._todos_tcbs.append(novo)
-            print(f"TCB criado: {novo}")
+            if (self._modo_debug):
+                print(f"TCB criado: {novo}")
 
     def configsEscalonador(self):        
         self._escalonador.alg = self._configuracoes[0]
         self._escalonador.quantum = self._configuracoes[1]
-        print(f"Configurando escalonador...")
-        print(f"Algoritmo: {self._escalonador.alg}, Quantum: {self._escalonador.quantum}")
+        if (self._modo_debug):
+            print(f"Configurando escalonador...")
+            print(f"Algoritmo: {self._escalonador.alg}, Quantum: {self._escalonador.quantum}")
 
     def atualizaCarregadas(self, tickAtual):
         mover = []
@@ -74,7 +84,8 @@ class SistemaOperacional:
             t.estado = "pronta"
             self._tarefasProntas.addTask(t)
             self._tarefasCarregadas.removeTask(t)
-            print(f"Tarefa {t.id} movida para PRONTA no tick {tickAtual}")
+            if (self._modo_debug):
+                print(f"Tarefa {t.id} movida para PRONTA no tick {tickAtual}")
 
     def loopConstante(self, modo_debug=False):
         while (not self._tarefasCarregadas.isEmpty() or 
@@ -83,13 +94,15 @@ class SistemaOperacional:
 
             tick_atual = self._relogio.tickAtual
             self.atualizaCarregadas(tick_atual)
-            if not self._tarefasProntas.isEmpty() :
-                print("TAREFAS PRONTAS:", [t.id for t in self._tarefasProntas.getAll()])
+            if (self._modo_debug):
+                if not self._tarefasProntas.isEmpty() :
+                    print("TAREFAS PRONTAS:", [t.id for t in self._tarefasProntas.getAll()])
 
             self._tarefaExecutando = self._escalonador.escolherTarefa(self._tarefasProntas, self._tarefaExecutando)
  
             if self._tarefaExecutando:
-                print(f"TAREFA A EXECUTAR: {self._tarefaExecutando.id}")
+                if (self._modo_debug):
+                    print(f"TAREFA A EXECUTAR: {self._tarefaExecutando.id}")
                 self.executarTarefa(self._tarefaExecutando, self._tarefasProntas)
 
             for tarefa in self._tarefasProntas:
@@ -100,22 +113,25 @@ class SistemaOperacional:
             self.registrarTickNoHistorico()
             self.proximoTick()
 
-            if modo_debug:
+            if (self._modo_debug):
                 input("Pressione ENTER para avançar...")
 
-        print("=== TODAS AS TAREFAS CONCLUÍDAS ===")
+        if (self._modo_debug):
+            print("=== TODAS AS TAREFAS CONCLUÍDAS ===")
         View.gerar_grafico(self._historico, self._todos_tcbs)
 
     def executarTarefa(self, tarefa, listaProntas):
         tarefa.estado = "executando"
         tarefa.executarTick()
-        print(f"{tarefa.id} executou (restante {tarefa.duracaoRestante})")
+        if (self._modo_debug):
+            print(f"{tarefa.id} executou (restante {tarefa.duracaoRestante})")
         if tarefa.estaConcluida():
             tarefa.concluirTarefa()
 
     def proximoTick(self):
         novoTick = self._relogio.proximoTick()
-        print(f"\n=== Tick {novoTick} ===")
+        if (self._modo_debug):
+            print(f"\n=== Tick {novoTick} ===")
 
     def registrarTickNoHistorico(self):
         tick = self._relogio.tickAtual
@@ -132,4 +148,24 @@ class SistemaOperacional:
             ]
         }
         self._historico.append(registro)
-        print(f"[HISTÓRICO] Tick {tick}: CPU -> {id_exec}")
+        if (self._modo_debug):
+            print(f"[HISTÓRICO] Tick {tick}: CPU -> {id_exec}")
+
+    def configurarModoDebug(self):
+        try:
+            entrada = input("Digite 0 para modo normal e 1 para modo debug: ").strip()
+            
+            if entrada == "1":
+                self._modo_debug = True
+                print("Modo debug ATIVADO")
+            elif entrada == "0":
+                self._modo_debug = False
+                print("Modo normal ATIVADO")
+            else:
+                # Entrada inválida - usa padrão e mostra aviso
+                self._modo_debug = False
+                print("Opção inválida. Indo para o modo normal por padrão.")
+                
+        except Exception as e:
+            self._modo_debug = False
+            print("Erro na entrada. Indo para o modo normal por padrão.")
