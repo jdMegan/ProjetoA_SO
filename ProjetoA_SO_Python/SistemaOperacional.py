@@ -36,10 +36,13 @@ class SistemaOperacional:
         self.parseConfigs(nome_config)
         if self._configuracoes is None:
             print("ERRO: Configurações inválidas! Encerrando sistema.")
+            input()
             sys.exit(1)
         self.configsEscalonador()
         self.criarTasks()
         self.loopConstante()
+        input()
+        sys.exit(1)
 
     def parseConfigs(self, nome_config):
         if (self._modo_debug):
