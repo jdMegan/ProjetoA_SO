@@ -1,7 +1,10 @@
 # Esse modulo View contem as funcoes necessarias para construir o grafico
 
-import matplotlib.pyplot as plt # Parecido com matlab pra graficos
-from collections import defaultdict # Cria as listas vazias ao inves de dar erro, se nao existirem
+import matplotlib
+matplotlib.use('Agg') 
+import matplotlib.pyplot as plt
+from collections import defaultdict
+
 
 # Cor do tempo que a tarefa esta ociosa
 COR_ESPERA = 'lightgray'
