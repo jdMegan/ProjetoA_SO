@@ -14,7 +14,7 @@ class Escalonador:
 
         elif self._alg == AlgoritmoEscalonamento.ROUND_ROBIN:
             #Se não tem tarefa executando, ou ela concluiu, pega a proxima
-            if (tarefaExecutando is None or tarefaExecutando.estado == EstadoTarefa.CONCLUIDA ):
+            if (tarefaExecutando is None or tarefaExecutando.estaConcluida() ):
                 return listaProntas.getNext()
             
             # Tem tarefa executando não concluida, mas acabou o quantum
