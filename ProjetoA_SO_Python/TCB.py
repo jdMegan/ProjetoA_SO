@@ -18,6 +18,7 @@ class TCB:
         # Quando tempo seguido ela esteve executando, para controle do quantum
         self._tempoVida = 0
         self._tempoExecutando = 0
+        self._tempo_conclusao = 0
 
     def __repr__(self):
         return (
@@ -60,9 +61,10 @@ class TCB:
         else:
             print(f"AVISO: Tentativa de executar tarefa {self._id} já concluída!")
 
-    def concluirTarefa(self):
+    def concluirTarefa(self, tick_conclusao):
         # Marca a tarefa como concluida
         self._estado = EstadoTarefa.CONCLUIDA
+        self._tempo_conclusao = tick_conclusao
 
     def passouQuantum(self, quantum):
         # Verifica se a tarefa já estourou o tempo de quantum
@@ -191,3 +193,7 @@ class TCB:
     @property
     def tempoVida(self):
         return self._tempoVida
+    
+    @property
+    def tempo_conclusao(self):
+        return self._tempo_conclusao

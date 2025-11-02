@@ -12,7 +12,7 @@ def busca_tcb_por_id(id_tarefa, lista_todos_tcbs):
             return tcb_atual
     return None # Se não achar
 
-def gerar_grafico(historico, lista_todos_tcbs, nome_saida="grafico.png"):
+def gerar_grafico(historico, lista_todos_tcbs, algoritmo, tt, tw, nome_saida="grafico.png"):
         
     # verifica quem rodou e constroi os blocos de tempo de execucao
     blocos_tempo = defaultdict(list) # vai guardar os blocos de tempo que cada tarefa rodou.
@@ -160,8 +160,22 @@ def gerar_grafico(historico, lista_todos_tcbs, nome_saida="grafico.png"):
     # Coloca linhas pontilhadas verticais para ajudar a ler os ticks
     eixos.grid(True, axis='x', linestyle='--', alpha=0.6)
 
-    plt.title("Gráfico")
-    
-    # Salva o desenho como um arquivo de imagem!
+    # Titulo do grafico e descricao
+    title = f"Gráfico de Escalonamento do Algoritmo: {algoritmo}"
+    plt.title(title)    
+
+    total_ticks = historico[-1]['tick'] + 1
+    descricao1 = f"""Tempo Total da Simulação: {total_ticks} Ticks
+Tempo Médio de Vida (Turnaround): {tt}
+Tempo Médio de Espera (Waiting): {tw}"""
+
+    plt.figtext(
+        # x e y na imagem
+        0.10, 0.91,
+        descricao1, 
+        fontsize=9, 
+        ha='left'
+    )
+       
     plt.savefig(nome_saida)
     print(f"Gráfico salvo!")

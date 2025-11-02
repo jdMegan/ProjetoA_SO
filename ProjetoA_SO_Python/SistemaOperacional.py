@@ -141,7 +141,8 @@ class SistemaOperacional:
             print("")
             print("=== Execução concluída ===")
             print("")
-        View.gerar_grafico(self._historico, self._todos_tcbs)
+        tt, tw = self.calcularMetricas()
+        View.gerar_grafico(self._historico, self._todos_tcbs, self._escalonador._alg, tt, tw)
 
     def executarTarefa(self, tarefa, listaProntas):
         tarefa.estado = "executando"
@@ -152,7 +153,7 @@ class SistemaOperacional:
             else:
                 print(f"    >> Tarefa {tarefa.id} executou | Restante: {tarefa.duracaoRestante}")
         if tarefa.estaConcluida():
-            tarefa.concluirTarefa()
+            tarefa.concluirTarefa(self._relogio.tickAtual)
 
     def proximoTick(self):
         novoTick = self._relogio.proximoTick()
@@ -211,3 +212,31 @@ class SistemaOperacional:
             self._modo_debug = False
             print("  AVISO: Erro na entrada. Modo debug: DESATIVADO.")
         print("")
+
+    def calcularMetricas(self):
+        # Calcula tempo medio de vida (tt) e tempo medio de espera (tw)  
+        tarefas_concluidas = [t for t in self._todos_tcbs if t.estaConcluida()]
+        if not tarefas_concluidas:
+            print("Erro ao calcular métricas : Nenhuma tarefa concluída.")
+            return 0, 0
+        
+        soma_tt = 0
+        soma_tw = 0
+        
+        # Calcula tt e tw
+        for t in tarefas_concluidas:
+            tt_t0x= t.tempo_conclusao - t.ingresso
+            soma_tt += tt_t0x
+
+            tw_t0x = tt_t0x - t.duracao
+            soma_tw += tw_t0x     
+
+        # Calcula as medias
+        num_tarefas = len(tarefas_concluidas)
+        tt = soma_tt / num_tarefas
+        tw = soma_tw / num_tarefas
+        
+        print("=== Métricas ===")
+        print(f"Turnaround Time: {tt:.2f}")
+        print(f"Waiting Time: {tw:.2f}")
+        return tt, tw
