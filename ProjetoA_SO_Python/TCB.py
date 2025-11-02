@@ -11,7 +11,7 @@ class TCB:
         self._duracao = duracao
         # Quanto falta para terminar
         self._duracaoRestante = duracao
-        self._prioridade = prioridade  # ✅ CORRIGIDO: usa o parâmetro
+        self._prioridade = prioridade  
         self._eventos = eventos or []
         # Quando é criada tem sempre o estado carregada, é um ENUM
         self._estado = EstadoTarefa.CARREGADA
@@ -71,23 +71,6 @@ class TCB:
         # Verifica se a tarefa já estourou o tempo de quantum
         return self._tempoExecutando >= quantum
     
-    def _dessaturarCor(self, corHex):
-        try:
-            r = int(corHex[1:3], 16)
-            g = int(corHex[3:5], 16)
-            b = int(corHex[5:7], 16)
-            
-            # Fórmula de luminância para cinza
-            gray = int(0.299 * r + 0.587 * g + 0.114 * b)
-            
-            # Mistura 30% da cor original + 70% cinza
-            r_des = int(r * 0.3 + gray * 0.7)
-            g_des = int(g * 0.3 + gray * 0.7) 
-            b_des = int(b * 0.3 + gray * 0.7)
-            
-            return f"#{r_des:02x}{g_des:02x}{b_des:02x}"
-        except:
-            return "#CCCCCC"  # Fallback para cinza
 
     # Getters e setters
     @property
@@ -102,12 +85,8 @@ class TCB:
     
     @property
     def cor(self):
-        # Retorna a cor, em hexcode, se estiver executando
-        # Caso contrario retorna uma versao dessaturada
-        if self._estado == EstadoTarefa.EXECUTANDO:
-            return self._cor.paraHex()
-        else:
-            return self._dessaturarCor(self._cor.paraHex())
+        return self._cor.paraHex()
+        
     
     @cor.setter
     def cor(self, valor):
