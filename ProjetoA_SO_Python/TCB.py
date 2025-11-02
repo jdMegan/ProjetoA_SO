@@ -64,7 +64,7 @@ class TCB:
     def concluirTarefa(self, tick_conclusao):
         # Marca a tarefa como concluida
         self._estado = EstadoTarefa.CONCLUIDA
-        self._tempo_conclusao = tick_conclusao
+        self._tempo_conclusao = tick_conclusao + 1
 
     def passouQuantum(self, quantum):
         # Verifica se a tarefa já estourou o tempo de quantum

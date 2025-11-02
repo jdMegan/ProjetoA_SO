@@ -225,18 +225,17 @@ class SistemaOperacional:
         
         # Calcula tt e tw
         for t in tarefas_concluidas:
-            tt_t0x= t.tempo_conclusao - t.ingresso
+            tt_t0x = t.tempo_conclusao - t.ingresso
             soma_tt += tt_t0x
 
             tw_t0x = tt_t0x - t.duracao
-            soma_tw += tw_t0x     
-
+            soma_tw += tw_t0x
         # Calcula as medias
         num_tarefas = len(tarefas_concluidas)
         tt = soma_tt / num_tarefas
         tw = soma_tw / num_tarefas
         
         print("=== Métricas ===")
-        print(f"Turnaround Time: {tt:.2f}")
-        print(f"Waiting Time: {tw:.2f}")
+        print(f"Turnaround Time: {tt:.1f}")
+        print(f"Waiting Time: {tw:.1f}")
         return tt, tw
