@@ -15,6 +15,14 @@ class Parser:
             base_dir = os.path.dirname(os.path.abspath(__file__))
         nome_arquivo = os.path.join(base_dir, nome_arquivo)        
 
+        # Verifica see esta rodando no executavel pyinstaller
+        if getattr(sys, 'frozen', False):
+            base_dir = os.path.dirname(sys.executable)
+        # Se não esta no vscode
+        else:
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+        nome_arquivo = os.path.join(base_dir, nome_arquivo)  
+
         try:
             with open(nome_arquivo, 'r') as arq:
                 # Lê algoritmo e quantum

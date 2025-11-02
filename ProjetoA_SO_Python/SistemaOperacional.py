@@ -25,61 +25,67 @@ class SistemaOperacional:
         self.comecar(nome_config)
 
     def comecar(self, nome_config):
-        print("Iniciando Sistema Operacional...")
+        print("=== Sistema Operacional Iniciado ===")
+        print("")
 
         #Opção do modo debug
         self.configurarModoDebug()
-
         if (self._modo_debug):
-            print("=== Tick 0 ===")
+            print("--- Tick 0 ---")
+        
         self.parseConfigs(nome_config)
         if self._configuracoes is None:
-            print("Encerrando o sistema!")
+            print("ERRO: Configurações inválidas! Encerrando sistema.")
             input()
             sys.exit(1)
         self.configsEscalonador()
         self.criarTasks()
         self.loopConstante()
-        print("Encerrando o sistema!")
         input()
         sys.exit(1)
 
     def parseConfigs(self, nome_config):
         if (self._modo_debug):
-            print("Lendo configurações...")
+            print("-> Lendo configurações...")
         self._configuracoes, self._tarefas = self._parser.lerConfigs(nome_config)
 
     def criarTasks(self):
         if (self._modo_debug):
-            print("Criando tasks...")
+            print("-> Criando tarefas: ")
         for linha in self._tarefas:
             dados = linha.split(';')
             if len(dados) < 5:
-                print(f"Linha inválida: {linha}")
+                print(f"  AVISO: Linha ignorada - {linha}")
                 continue
             id = dados[0]
             cor = int(dados[1])
             ingresso = int(dados[2])
             duracao = int(dados[3])
+            test = None
 
             # Aqui é para caso não tenha prioridade nem eventos
             prioridade = int(dados[4]) if len(dados) > 4 and dados[4].isdigit() else 0
             eventos = dados[5:] if len(dados) > 5 else []
 
+            # Tarefa criada e salva, esperando a hora de ingresso
             novo = TCB.TCB(id, cor, ingresso, duracao, prioridade, eventos)
             self._tarefasCarregadas.addTask(novo)
             self._todos_tcbs.append(novo)
-            if (self._modo_debug):
-                print(f"TCB criado: {novo}")
+            if self._modo_debug:
+                print(f"  [+] {id} | Ingresso: {ingresso} | Duração: {duracao} | Pri: {prioridade} | Cor: {cor} | Eventos: {eventos} | Estado: {novo.estado.value}")
+
 
     def configsEscalonador(self):        
         self._escalonador.alg = self._configuracoes[0]
         self._escalonador.quantum = self._configuracoes[1]
         if (self._modo_debug):
-            print(f"Configurando escalonador...")
-            print(f"Algoritmo: {self._escalonador.alg}, Quantum: {self._escalonador.quantum}")
+            print("-> Configurações do escalonador:")
+            print(f"  Algoritmo: {self._escalonador.alg.value}")
+            print(f"  Quantum: {self._escalonador.quantum}")
+            print("")
 
     def atualizaCarregadas(self, tickAtual):
+        # Lista temporaria para poder mudar a lista enquanto itera
         mover = []
         for t in self._tarefasCarregadas.getAll():
             if t.ingresso == tickAtual:
@@ -89,53 +95,70 @@ class SistemaOperacional:
             self._tarefasProntas.addTask(t)
             self._tarefasCarregadas.removeTask(t)
             if (self._modo_debug):
-                print(f"Tarefa {t.id} movida para PRONTA no tick {tickAtual}")
+                print(f"  Tarefa {t.id} -> PRONTA (tick {tickAtual})")
+
 
     def loopConstante(self, modo_debug=False):
+        # Enquanto ainda existirem tarefas
         while (not self._tarefasCarregadas.isEmpty() or 
                not self._tarefasProntas.isEmpty() or 
                self._tarefaExecutando is not None):
 
+            # Atualiza tarefas para esse tick
             tick_atual = self._relogio.tickAtual
             self.atualizaCarregadas(tick_atual)
-            if (self._modo_debug):
-                if not self._tarefasProntas.isEmpty() :
-                    print("TAREFAS PRONTAS:", [t.id for t in self._tarefasProntas.getAll()])
+            if self._modo_debug:
+                if not self._tarefasProntas.isEmpty():
+                    tarefas_prontas_ids = [t.id for t in self._tarefasProntas.getAll()]
+                    print(f"  Prontas: {tarefas_prontas_ids}")
+                else:
+                    print("  Prontas: [vazia]")
 
+            # Chama o escalonador
             self._tarefaExecutando = self._escalonador.escolherTarefa(self._tarefasProntas, self._tarefaExecutando)
  
             if self._tarefaExecutando:
-                if (self._modo_debug):
-                    print(f"TAREFA A EXECUTAR: {self._tarefaExecutando.id}")
+                if self._modo_debug:
+                    print(f"  Executando: {self._tarefaExecutando.id}")
                 self.executarTarefa(self._tarefaExecutando, self._tarefasProntas)
+            else:
+                if self._modo_debug:
+                    print("  Executando: [None]")
 
+            # Envelhece as outras tarefas
             for tarefa in self._tarefasProntas:
                 tarefa.incrementaTempoVida()
             for tarefa in self._tarefasSuspensas:
                 tarefa.incrementaTempoVida()
 
             self.registrarTickNoHistorico()
+            
+            if (self._modo_debug):
+                input("  [ENTER para continuar] ")
             self.proximoTick()
 
-            if (self._modo_debug):
-                input("Pressione ENTER para avançar...")
-
         if (self._modo_debug):
-            print("=== TODAS AS TAREFAS CONCLUÍDAS ===")
+            print("")
+            print("=== Execução concluída ===")
+            print("")
         View.gerar_grafico(self._historico, self._todos_tcbs)
 
     def executarTarefa(self, tarefa, listaProntas):
         tarefa.estado = "executando"
         tarefa.executarTick()
-        if (self._modo_debug):
-            print(f"{tarefa.id} executou (restante {tarefa.duracaoRestante})")
+        if self._modo_debug:
+            if tarefa.estaConcluida():
+                print(f"    >> Tarefa {tarefa.id} CONCLUÍDA")
+            else:
+                print(f"    >> Tarefa {tarefa.id} executou | Restante: {tarefa.duracaoRestante}")
         if tarefa.estaConcluida():
             tarefa.concluirTarefa()
 
     def proximoTick(self):
         novoTick = self._relogio.proximoTick()
         if (self._modo_debug):
-            print(f"\n=== Tick {novoTick} ===")
+            print("")
+            print(f"--- Tick {novoTick} ---")
 
     def registrarTickNoHistorico(self):
         tick = self._relogio.tickAtual
@@ -151,25 +174,40 @@ class SistemaOperacional:
                 for t in self._todos_tcbs
             ]
         }
+
         self._historico.append(registro)
-        if (self._modo_debug):
-            print(f"[HISTÓRICO] Tick {tick}: CPU -> {id_exec}")
+        if self._modo_debug:
+            print("-> Atualizando historico:")
+
+            # Separa as tarefas que não foram concluidas
+            tarefas_ativas = []
+            for t in self._todos_tcbs:
+                if t.estado.value != "concluida":
+                    estado = t.estado.value
+                    tarefas_ativas.append(f"{t.id}({estado},{t.duracaoRestante})")
+            
+            #Concatena a lista em string e printa
+            if tarefas_ativas:
+                print(f"  Estado atual das tarefas e tempo restante:")
+                print(f"    >> {', '.join(tarefas_ativas)}")
+        
 
     def configurarModoDebug(self):
         try:
-            entrada = input("Digite 0 para modo normal e 1 para modo debug: ").strip()
+            print("Configuração:")
+            entrada = input("  Modo debug? (0=Não, 1=Sim): ").strip()
             
             if entrada == "1":
                 self._modo_debug = True
-                print("Modo debug ATIVADO")
+                print("  Modo debug: ATIVADO")
             elif entrada == "0":
                 self._modo_debug = False
-                print("Modo normal ATIVADO")
+                print("  Modo debug: DESATIVADO")
             else:
-                # Entrada inválida - usa padrão e mostra aviso
                 self._modo_debug = False
-                print("Opção inválida. Indo para o modo normal por padrão.")
+                print("  AVISO: Opção inválida. Modo debug: DESATIVADO.")
                 
         except Exception as e:
             self._modo_debug = False
-            print("Erro na entrada. Indo para o modo normal por padrão.")
+            print("  AVISO: Erro na entrada. Modo debug: DESATIVADO.")
+        print("")
