@@ -1,9 +1,12 @@
 import SistemaOperacional
 
-so = SistemaOperacional.SistemaOperacional("arquivo-configuracao-FSCS2.txt")
+print("Iniciando Sistema Operacional...")
 
-# Observar que como nao existem prioridades no ex do professor eu tive q 
-# adicionar prioridades simuladas ao exemplo
-# so = SistemaOperacional.SistemaOperacional("arquivo-configuracao-PRIOP5.txt")
+caminho = input("Digite caminho para o arquivo de configurações: ").strip()
 
-# so = SistemaOperacional.SistemaOperacional("arquivo-configuracao-SRTF2.txt")
+so = SistemaOperacional.SistemaOperacional(caminho)
+
+try:
+    so = SistemaOperacional.SistemaOperacional(caminho)
+except Exception as e:
+    print("Erro no caminho, o arquivo não foi encontrado.")
