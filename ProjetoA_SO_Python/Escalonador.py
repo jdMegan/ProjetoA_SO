@@ -6,11 +6,12 @@ class Escalonador:
         self._alg = None
 
     def escolherTarefa(self, listaProntas, tarefaExecutando):
+        # Define de acordo com cada algoritmo qual a proxima
+        # tarefa a ser executada
         if self._alg == AlgoritmoEscalonamento.FCFS:
             if( tarefaExecutando is None or tarefaExecutando.estaConcluida()):
                 return listaProntas.getNext()
             return tarefaExecutando
-
 
         elif self._alg == AlgoritmoEscalonamento.ROUND_ROBIN:
             #Se não tem tarefa executando, ou ela concluiu, pega a proxima

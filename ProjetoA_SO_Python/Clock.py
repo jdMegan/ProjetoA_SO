@@ -1,4 +1,5 @@
 class Clock():
+    # O clock foi construido como um contador simples 
     def __init__(self):
         self._tick = 1
         self._tickAtual = 0

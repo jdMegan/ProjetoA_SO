@@ -2,6 +2,7 @@
 from Enums import EstadoTarefa, CorTarefa
 
 class TCB:
+    # Estrutura de dados que representa as tarefas
     def __init__(self, id, cor, ingresso, duracao, prioridade, eventos):
         self._id = id
         # Chega como int, vira ENUM

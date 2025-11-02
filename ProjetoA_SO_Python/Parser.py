@@ -3,6 +3,8 @@ import sys
 from Enums import AlgoritmoEscalonamento, CorTarefa
 
 class Parser:
+    # Tem como função ler o arquivo txt e devolver as informacoes existentes
+    
     def __init__(self):
         pass
     

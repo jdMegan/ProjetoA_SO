@@ -90,6 +90,7 @@ class SistemaOperacional:
         for t in self._tarefasCarregadas.getAll():
             if t.ingresso == tickAtual:
                 mover.append(t)
+        # Transfere da lista de carregadas para a lista de prontas
         for t in mover:
             t.estado = "pronta"
             self._tarefasProntas.addTask(t)
@@ -162,6 +163,8 @@ class SistemaOperacional:
             print(f"--- Tick {novoTick} ---")
 
     def registrarTickNoHistorico(self):
+        # Transfere as ocorrencias desse tick para um historico,
+        # para posteriormente montar o grafico
         tick = self._relogio.tickAtual
         id_exec = self._tarefaExecutando.id if self._tarefaExecutando else "OCIOSA"
         cor_exec = self._tarefaExecutando.cor if self._tarefaExecutando else "#888888"
