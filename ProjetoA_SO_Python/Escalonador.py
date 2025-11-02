@@ -4,93 +4,109 @@ class Escalonador:
     def __init__(self):
         self._quantum = None
         self._alg = None
-        self._quantum_atual = 0 # O quantum soh se ""mexe"" se uma tarefa receber o processador, 
-        # a tarefa recebe o quantum inteiro (self._quantum), e vai perdendo ele, decrementando a cada tick
-        self._tar_quantum_anterior = None # Armazena a ultima tarefa q rodou no quantum,
-        # sempre q zera o quantum atualiza
 
-    #Os tipos de algoritimo poderiam ser um ENUM, implementar isso no futuro
+    def escolherTarefa(self, listaProntas, tarefaExecutando):
+        if self._alg == AlgoritmoEscalonamento.FCFS:
+            if( tarefaExecutando is None or tarefaExecutando.estaConcluida()):
+                return listaProntas.getNext()
+            return tarefaExecutando
 
-    #Recebe a lista de prontas, escolhe uma, retorna ela pro so por na lista de executando
-    def escolherTarefa(self, listaProntas):
-        # Na real nem tem um  algoritmo FSCS o nome certo é FCFS mesmo ou FIFO
-        # Mas como no arquivo dele ta errado, melhor manter os dois pq nao da pra saber oq ele vai pedir no arquivo de config na apresentacao
-        if self._alg == AlgoritmoEscalonamento.FCFS or self._alg == AlgoritmoEscalonamento.FSCS:
-            tarefa_escolhida = listaProntas.getNext()
-            if self._quantum_atual > 0: # Se ainda tiver quantum, continua rodando
-                self.decrementaQuantumAtual()
-            # elif self._quantum_atual == 0:
-            #     print(tarefa_escolhida)
-            #     print("resetou o quantum")
-            #     self.resetaQuantumAtual()
-            return tarefa_escolhida
-        elif self._alg == AlgoritmoEscalonamento.PRIORIDADE_P:
-            # N espera o pelo quantum acabar, se entrar alguma tarefa, ela preempta a outra
-            # Implementação futura
-            pass
-        elif self._alg == AlgoritmoEscalonamento.SRTF:
-            # Implementação futura  
-            pass
-        return None
-    
-    # Cada algoritmo vai ter um jeito de lidar com a tarefa por tick
-    # Por exemplo, no FIFO ele soh checa se ainda tem tempo no quantum e mantem, se nao tiver, e volta para o final da fila de prontas    
-    def reajustaTarefa(self, tarefa, listaProntas): # Nome pessimo, pensar dps
-        # Apos a execução/tick tem q ""tratar a tarefa"" verificar se ela continua executando ou volta para o final da fila de prontas
-        # Se ainda estiver no quatum, bota ela no inicio da fila denovo
-        if self._alg == AlgoritmoEscalonamento.FCFS or self._alg == AlgoritmoEscalonamento.FSCS:
-            print('entrou no REAJUSTE \n')
-            print("o quantum agr é: ", self._quantum_atual)
-            if(self._quantum_atual == 0): #atualiza a ultima tarefa
-                self._tar_quantum_anterior = tarefa
-            # Se ainda tiver quantum e ela nao foi a ultima a executar
-            print("self._tar_quantum_anterior=", self._tar_quantum_anterior)
-            print((self._quantum_atual <= self._quantum) & (tarefa is not self._tar_quantum_anterior) 
-                  )
-            if ((self._quantum_atual <= self._quantum) 
-                & (tarefa is not self._tar_quantum_anterior)
-                & (tarefa._duracaoRestante is not 0)):
-                listaProntas.addFirstTask(tarefa)
-            else:
-                if(tarefa.duracaoRestante > 0):
-                    listaProntas.addTask(tarefa)
-                print("resetou o quantum em baixooooo")
-                self.resetaQuantumAtual()
-                print(self._quantum_atual)
-        elif self._alg == AlgoritmoEscalonamento.PRIORIDADE_P:
-            # Implementação futura
-            pass
-        elif self._alg == AlgoritmoEscalonamento.SRTF:
-            # Implementação futura 
-            pass
-        return None
-        
-    def decrementaQuantumAtual(self):
-        self._quantum_atual -= 1
-    
-    def resetaQuantumAtual(self):
-        self._quantum_atual = self._quantum
 
-    def atualizaTarQuantumAnterior(self, tarefa):
-        self._tar_quantum_anterior = tarefa
+        elif self._alg == AlgoritmoEscalonamento.ROUND_ROBIN:
+            #Se não tem tarefa executando, ou ela concluiu, pega a proxima
+            if (tarefaExecutando is None or tarefaExecutando.estado == EstadoTarefa.CONCLUIDA ):
+                return listaProntas.getNext()
             
-    
-    
+            # Tem tarefa executando não concluida, mas acabou o quantum
+            # Volta pra fila e pega a proxima
+            elif tarefaExecutando.passouQuantum(self._quantum):
+                tarefaExecutando.resetQuantum()
+                listaProntas.addTask(tarefaExecutando)
+                return listaProntas.getNext()
+            
+            #Se tem tarefa, não concluida, com quantum, continua
+            else:
+                return tarefaExecutando
 
-    # Getters e setters
-    @property 
-    def quantum(self):
-        return self._quantum
+
+        elif self._alg == AlgoritmoEscalonamento.SRTF:
+            # Tem tarefa e ela terminou
+            # Ela some
+            if tarefaExecutando and tarefaExecutando.estaConcluida():
+                tarefaExecutando = None 
+                
+            #Lista de todas as tarefas          
+            todas = listaProntas.getAll()
+
+            #Caso a tarefa não tenha sido concluida ela entra para a consideração
+            tarefa_anterior = tarefaExecutando
+            if tarefa_anterior:
+                todas.append(tarefa_anterior)
+                
+            #Se não tem tarefa para considerar retorna none
+            if not todas:
+                return None 
+
+            # Checando a menor duração
+            # t.ingresso para caso de empate
+            tarefa_menor_dur = min(todas, key=lambda t: (t.duracaoRestante, t.ingresso))
+            
+            # Se a tarefa escolhida é a mesma que já estava na CPU, não faz nada.
+            if tarefa_menor_dur == tarefa_anterior:
+                return tarefa_anterior       
+                    
+            # Se não, troca 
+            # Se a tarefa q perdeu o processador ainda existe, ela volta pra prontas
+            if tarefa_anterior is not None:
+                if not tarefa_anterior.estaConcluida():
+                    tarefa_anterior.estado = "pronta"
+                    listaProntas.addTask(tarefa_anterior)
+
+                # A nova tarefa n pode ficar na fila e na CPU
+            if listaProntas.contem(tarefa_menor_dur):
+                listaProntas.removeTask(tarefa_menor_dur)
+            return tarefa_menor_dur
+
+
+        elif self._alg == AlgoritmoEscalonamento.PRIORIDADE_P:
+            # Tem tarefa e ela terminou
+            # Ela some
+            if tarefaExecutando and tarefaExecutando.estaConcluida():
+                tarefaExecutando = None
+            
+            #Atualiza ista de todas as tarefas  
+            todas = listaProntas.getAll()
+            if tarefaExecutando:
+                todas.append(tarefaExecutando)
+            if not todas:
+                return None
+            
+            # Pega a maior prioridade independendo de ingrasso, quantum, etc.
+            # Tem q dar um jeito de fazer com q em caso de empate escolha a com id menor ?
+            tarefa_maior_prio = max(todas, key=lambda t: t.prioridade)
+            
+            # Se a tarefa escolhida é a mesma que já estava na CPU, não faz nada.
+            if tarefa_maior_prio == tarefaExecutando:
+                return tarefaExecutando
+            
+            # Se a melhor tarefa é dif da que esta executando eh pq teve preempcao            
+            if tarefaExecutando is not None:
+                if not tarefaExecutando.estaConcluida():
+                    tarefaExecutando.estado = "pronta"
+                    listaProntas.addTask(tarefaExecutando) # Volta para a fila de pronta
+            
+            # A nova tarefa n pode ficar na fila e na CPU
+            if listaProntas.contem(tarefa_maior_prio):
+                listaProntas.removeTask(tarefa_maior_prio)
+            return tarefa_maior_prio
+
+        return None
+
+    @property
+    def quantum(self): return self._quantum
     @quantum.setter
-    def quantum(self, quantum):
-        self._quantum = quantum
-
-    @property 
-    def alg(self):
-        return self._alg
+    def quantum(self, q): self._quantum = q
+    @property
+    def alg(self): return self._alg
     @alg.setter
-    def alg(self, alg):
-        self._alg = alg
-    
-
-
+    def alg(self, a): self._alg = a

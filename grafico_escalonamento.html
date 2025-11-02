@@ -1,0 +1,330 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico de Escalonamento</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .info-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .legenda {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+        }
+        
+        .legenda-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legenda-cor {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid #ddd;
+        }
+        
+        .grafico-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+        
+        .linha-tarefa {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            height: 50px;
+        }
+        
+        .tarefa-label {
+            width: 80px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: right;
+            padding-right: 15px;
+        }
+        
+        .linha-tempo {
+            display: flex;
+            flex: 1;
+            height: 40px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #e9ecef;
+        }
+        
+        .bloco {
+            height: 100%;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .bloco:hover {
+            transform: scale(1.05);
+            z-index: 2;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        
+        .bloco.execucao {
+            border-right: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .bloco.espera {
+            background: #E5E7EB !important;
+        }
+        
+        .eixo-tempo {
+            display: flex;
+            margin-left: 80px;
+            margin-bottom: 20px;
+        }
+        
+        .tick-tempo {
+            flex: 1;
+            text-align: center;
+            font-size: 0.8em;
+            color: #7f8c8d;
+            border-top: 1px solid #bdc3c7;
+            padding-top: 5px;
+        }
+        
+        .tick-tempo.principal {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 10;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #7f8c8d;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .grafico-container {
+                padding: 15px;
+            }
+            
+            .tarefa-label {
+                width: 60px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Gráfico de Escalonamento</h1>
+            <div class="subtitle">Visualização do Escalonador de Tarefas</div>
+        </div>
+        
+        <div class="info-panel">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">Tarefas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">30</div>
+                    <div class="stat-label">Ticks Totais</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">30</div>
+                    <div class="stat-label">Registros</div>
+                </div>
+            </div>
+            
+            <div class="legenda">
+                <div class="legenda-item">
+                    <div class="legenda-cor" style="background: #E5E7EB;"></div>
+                    <span>Tempo de Espera</span>
+                </div>
+                <div class="legenda-item">
+                    <div class="legenda-cor" style="background: #888888;"></div>
+                    <span>CPU Ociosa</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grafico-container">
+            <div class="eixo-tempo">
+                <div class="tick-tempo principal">0</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo principal">5</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo principal">10</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo principal">15</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo principal">20</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo principal">25</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo">•</div><div class="tick-tempo principal">30</div>
+            </div>
+            
+            
+        <div class="linha-tarefa">
+            <div class="tarefa-label">t01</div>
+            <div class="linha-tempo">
+                <div class="bloco" style="width: 16.666666666666664%; background: #f8f9fa;" data-tooltip="Tarefa t01<br>Não ingressou ainda: ticks 0-4"></div><div class="bloco espera" style="width: 10.0%; background: #E5E7EB;" data-tooltip="Tarefa t01<br>Esperando: ticks 5-7<br>Duração: 3 ticks"></div><div class="bloco execucao" style="width: 6.666666666666667%; background: #FF0000;" data-tooltip="Tarefa t01<br>Executando: ticks 8-9<br>Duração: 2 ticks"></div><div class="bloco" style="width: 66.66666666666666%; background: #f8f9fa;" data-tooltip="Tarefa t01<br>Não ingressou ainda: ticks 10-29"></div>
+            </div>
+        </div>
+        
+        <div class="linha-tarefa">
+            <div class="tarefa-label">t02</div>
+            <div class="linha-tempo">
+                <div class="bloco" style="width: 13.333333333333334%; background: #f8f9fa;" data-tooltip="Tarefa t02<br>Não ingressou ainda: ticks 0-3"></div><div class="bloco execucao" style="width: 6.666666666666667%; background: #FF0000;" data-tooltip="Tarefa t02<br>Executando: ticks 4-5<br>Duração: 2 ticks"></div><div class="bloco espera" style="width: 26.666666666666668%; background: #E5E7EB;" data-tooltip="Tarefa t02<br>Esperando: ticks 6-13<br>Duração: 8 ticks"></div><div class="bloco execucao" style="width: 3.3333333333333335%; background: #813535;" data-tooltip="Tarefa t02<br>Executando: ticks 14-14<br>Duração: 1 ticks"></div><div class="bloco" style="width: 50.0%; background: #f8f9fa;" data-tooltip="Tarefa t02<br>Não ingressou ainda: ticks 15-29"></div>
+            </div>
+        </div>
+        
+        <div class="linha-tarefa">
+            <div class="tarefa-label">t03</div>
+            <div class="linha-tempo">
+                <div class="bloco" style="width: 16.666666666666664%; background: #f8f9fa;" data-tooltip="Tarefa t03<br>Não ingressou ainda: ticks 0-4"></div><div class="bloco espera" style="width: 16.666666666666664%; background: #E5E7EB;" data-tooltip="Tarefa t03<br>Esperando: ticks 5-9<br>Duração: 5 ticks"></div><div class="bloco execucao" style="width: 6.666666666666667%; background: #FFFF00;" data-tooltip="Tarefa t03<br>Executando: ticks 10-11<br>Duração: 2 ticks"></div><div class="bloco espera" style="width: 16.666666666666664%; background: #E5E7EB;" data-tooltip="Tarefa t03<br>Esperando: ticks 12-16<br>Duração: 5 ticks"></div><div class="bloco execucao" style="width: 6.666666666666667%; background: #FFFF00;" data-tooltip="Tarefa t03<br>Executando: ticks 17-18<br>Duração: 2 ticks"></div><div class="bloco espera" style="width: 13.333333333333334%; background: #E5E7EB;" data-tooltip="Tarefa t03<br>Esperando: ticks 19-22<br>Duração: 4 ticks"></div><div class="bloco execucao" style="width: 3.3333333333333335%; background: #eaea9d;" data-tooltip="Tarefa t03<br>Executando: ticks 23-23<br>Duração: 1 ticks"></div><div class="bloco" style="width: 20.0%; background: #f8f9fa;" data-tooltip="Tarefa t03<br>Não ingressou ainda: ticks 24-29"></div>
+            </div>
+        </div>
+        
+        <div class="linha-tarefa">
+            <div class="tarefa-label">t04</div>
+            <div class="linha-tempo">
+                <div class="bloco" style="width: 20.0%; background: #f8f9fa;" data-tooltip="Tarefa t04<br>Não ingressou ainda: ticks 0-5"></div><div class="bloco espera" style="width: 20.0%; background: #E5E7EB;" data-tooltip="Tarefa t04<br>Esperando: ticks 6-11<br>Duração: 6 ticks"></div><div class="bloco execucao" style="width: 6.666666666666667%; background: #FFA500;" data-tooltip="Tarefa t04<br>Executando: ticks 12-13<br>Duração: 2 ticks"></div><div class="bloco espera" style="width: 16.666666666666664%; background: #E5E7EB;" data-tooltip="Tarefa t04<br>Esperando: ticks 14-18<br>Duração: 5 ticks"></div><div class="bloco execucao" style="width: 6.666666666666667%; background: #FFA500;" data-tooltip="Tarefa t04<br>Executando: ticks 19-20<br>Duração: 2 ticks"></div><div class="bloco espera" style="width: 10.0%; background: #E5E7EB;" data-tooltip="Tarefa t04<br>Esperando: ticks 21-23<br>Duração: 3 ticks"></div><div class="bloco execucao" style="width: 16.666666666666664%; background: #FFA500;" data-tooltip="Tarefa t04<br>Executando: ticks 24-28<br>Duração: 5 ticks"></div><div class="bloco" style="width: 3.3333333333333335%; background: #f8f9fa;" data-tooltip="Tarefa t04<br>Não ingressou ainda: ticks 29-29"></div>
+            </div>
+        </div>
+        
+        <div class="linha-tarefa">
+            <div class="tarefa-label">t05</div>
+            <div class="linha-tempo">
+                <div class="bloco" style="width: 13.333333333333334%; background: #f8f9fa;" data-tooltip="Tarefa t05<br>Não ingressou ainda: ticks 0-3"></div><div class="bloco espera" style="width: 6.666666666666667%; background: #E5E7EB;" data-tooltip="Tarefa t05<br>Esperando: ticks 4-5<br>Duração: 2 ticks"></div><div class="bloco execucao" style="width: 6.666666666666667%; background: #00FFFF;" data-tooltip="Tarefa t05<br>Executando: ticks 6-7<br>Duração: 2 ticks"></div><div class="bloco espera" style="width: 23.333333333333332%; background: #E5E7EB;" data-tooltip="Tarefa t05<br>Esperando: ticks 8-14<br>Duração: 7 ticks"></div><div class="bloco execucao" style="width: 6.666666666666667%; background: #00FFFF;" data-tooltip="Tarefa t05<br>Executando: ticks 15-16<br>Duração: 2 ticks"></div><div class="bloco espera" style="width: 13.333333333333334%; background: #E5E7EB;" data-tooltip="Tarefa t05<br>Esperando: ticks 17-20<br>Duração: 4 ticks"></div><div class="bloco execucao" style="width: 6.666666666666667%; background: #00FFFF;" data-tooltip="Tarefa t05<br>Executando: ticks 21-22<br>Duração: 2 ticks"></div><div class="bloco" style="width: 23.333333333333332%; background: #f8f9fa;" data-tooltip="Tarefa t05<br>Não ingressou ainda: ticks 23-29"></div>
+            </div>
+        </div>
+        
+        </div>
+        
+        <div class="footer">
+            Gerado em 01/11/2025 19:02:54 | 
+            Sistema de Escalonamento
+        </div>
+    </div>
+    
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+        function mostrarTooltip(elemento, texto) {
+            const tooltip = document.getElementById('tooltip');
+            const rect = elemento.getBoundingClientRect();
+            
+            tooltip.innerHTML = texto;
+            tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+            tooltip.style.top = (rect.top - 40) + 'px';
+            tooltip.style.opacity = '1';
+        }
+        
+        function esconderTooltip() {
+            document.getElementById('tooltip').style.opacity = '0';
+        }
+        
+        // Adicionar eventos aos blocos
+        document.addEventListener('DOMContentLoaded', function() {
+            const blocos = document.querySelectorAll('.bloco');
+            blocos.forEach(bloco => {
+                bloco.addEventListener('mouseenter', function(e) {
+                    const texto = this.getAttribute('data-tooltip');
+                    if (texto) {
+                        mostrarTooltip(this, texto);
+                    }
+                });
+                
+                bloco.addEventListener('mouseleave', esconderTooltip);
+            });
+        });
+    </script>
+</body>
+</html>
