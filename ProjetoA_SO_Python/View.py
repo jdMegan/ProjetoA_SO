@@ -167,7 +167,7 @@ def gerar_grafico(historico, lista_todos_tcbs, algoritmo, tt, tw, nome_saida="gr
     title = f"Gráfico de Escalonamento do Algoritmo: {algoritmo}"
     plt.title(title)    
 
-    total_ticks = historico[-1]['tick'] + 1
+    total_ticks = historico[-1]['tick']
     descricao1 = f"""Tempo Total da Simulação: {total_ticks} Ticks
 Tempo Médio de Vida (Turnaround): {tt}
 Tempo Médio de Espera (Waiting): {tw}"""
